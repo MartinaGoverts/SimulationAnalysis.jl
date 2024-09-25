@@ -1,6 +1,6 @@
 using Test, SimulationAnalysis
 
-file = "test/data/test_trajectory.h5"
+file = joinpath(@__DIR__, "data", "test_trajectory.h5")
 
 # Load the trajectory
 
