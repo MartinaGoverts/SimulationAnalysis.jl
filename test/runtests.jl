@@ -71,7 +71,7 @@ end
 
     Cb = SimulationAnalysis.find_CB(traj, neighborlists, neighborlists)
 
-    @test size(Cb) == (738,)
+    @test size(Cb) == (738, 1000)
 
 end
 
