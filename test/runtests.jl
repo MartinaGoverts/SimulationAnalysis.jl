@@ -65,6 +65,14 @@ end
     @test length(neighborlists) == 738
 
     @test length(neighborlists[1]) == 1000
+
+
+    # CB
+
+    Cb = SimulationAnalysis.find_CB(s, neighborlists, neighborlists)
+
+    @test size(Cb) == (738,)
+
 end
 
 

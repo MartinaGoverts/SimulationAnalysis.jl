@@ -20,6 +20,7 @@ include("MeanSquaredDisplacement.jl")
 include("F4_diagonal.jl")
 include("OverlapFunction.jl")
 include("Neighborlists.jl")
+include("BondBreakingParameter.jl")
 
 
 
