@@ -69,7 +69,7 @@ end
 
     # CB
 
-    Cb = SimulationAnalysis.find_CB(s, neighborlists, neighborlists)
+    Cb = SimulationAnalysis.find_CB(traj, neighborlists, neighborlists)
 
     @test size(Cb) == (738,)
 
