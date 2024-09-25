@@ -1,7 +1,8 @@
 
 module SimulationAnalysis
-import Base.show
-using HDF5, Polyester, Tullio, LoopVectorization, Base.Threads, Parsers, DelimitedFiles, Random, IfElse, Dierckx, ProgressMeter, OffsetArrays, ChunkSplitters
+import Base.show, Quickhull
+using HDF5, Polyester, Tullio, LoopVectorization, Base.Threads, Parsers, DelimitedFiles, Random, IfElse, Dierckx, ProgressMeter, OffsetArrays, ChunkSplitters, CellListMap, StaticArrays
+
 
 abstract type Simulation end
 import Base.step
@@ -17,6 +18,8 @@ include("Forces.jl")
 include("RadialDistributionFunction.jl")
 include("MeanSquaredDisplacement.jl")
 include("F4_diagonal.jl")
+include("OverlapFunction.jl")
+include("Neighborlists.jl")
 
 
 

@@ -62,7 +62,7 @@ function read_WCA_simulation(filenamefull, dt; maxt=-1, every=1, original=false)
     D = ones(N)
     N = size(F, 2)
     v = zeros(size(F)...)
-    dt_arr, t1_t2_pair_array = find_allowed_t1_t2_pair_array(t;doublefactor=200)
+    dt_arr, t1_t2_pair_array = find_allowed_t1_t2_pair_array_quasilog(t;doublefactor=200)
     # dt_arr = [t[i]-t[1] for i in 1:length(t)]
     # t1_t2_pair_array = [[1;; i] for i in 1:length(t)]
     s = SingleComponentSimulation(N, 3, r, v, F, D, t*dt , box_sizes, dt_arr , t1_t2_pair_array, filenamefull)
@@ -220,7 +220,7 @@ function read_Brownian_KALJ_simulation(filenamefull, dt; maxt=-1, every=1, origi
         r = find_original_trajectories(r, box_sizes)
     end
     types = types_array[1]
-    dt_arr, t1_t2_pair_array = find_allowed_t1_t2_pair_array(t;doublefactor=10)
+    dt_arr, t1_t2_pair_array = find_allowed_t1_t2_pair_array_quasilog(t;doublefactor=10)
     #dt_arr = Int.([t[i]-t[1] for i in 1:length(t)])
     #t1_t2_pair_array = [[1;; i] for i in 1:length(t)]
     F = zeros(size(r)...)
@@ -312,7 +312,7 @@ function read_Brownian_KAWCA_simulation(filenamefull, dt; maxt=-1, every=1, orig
         r = find_original_trajectories(r, box_sizes)
     end
     types = types_array[1]
-    dt_arr, t1_t2_pair_array = find_allowed_t1_t2_pair_array(t;doublefactor=10)
+    dt_arr, t1_t2_pair_array = find_allowed_t1_t2_pair_array_quasilog(t;doublefactor=10)
     #dt_arr = Int.([t[i]-t[1] for i in 1:length(t)])
     #t1_t2_pair_array = [[1;; i] for i in 1:length(t)]
     F = zeros(size(r)...)
@@ -396,7 +396,7 @@ function read_monodisperse_hard_sphere_simulation(filename; original=false, velo
         r = find_original_trajectories(r, box_sizes)
     end
     if dtarr
-        dt_arr, t1_t2_pair_array = find_allowed_t1_t2_pair_array(saved_at_times; doublefactor=10)
+        dt_arr, t1_t2_pair_array = find_allowed_t1_t2_pair_array_quasilog(saved_at_times; doublefactor=10)
     else
         dt_arr, t1_t2_pair_array = [1, 2], [zeros(Int, 2,2)]
     end
@@ -405,7 +405,7 @@ function read_monodisperse_hard_sphere_simulation(filename; original=false, velo
     return s
 end
 
-function read_continuously_hard_sphere_simulation(filename; original=false, velocities=false, forcestype=false)
+function read_continuously_hard_sphere_simulation(filename; original=false, velocities=false, forcestype=false, time_origins="quasilog")
     println("Reading data file")
     f = h5open(filename)
     saved_at_times = sort(parse.(Int64, keys(f["positions"])))
@@ -435,13 +435,12 @@ function read_continuously_hard_sphere_simulation(filename; original=false, velo
          F = zeros(1,1,1)
     end
     D = zeros(N, length(saved_at_times))
-    # D = zeros(N)
-    # D[:] .= read(f["diameters"]["diameters"])
+    D = zeros(N)
+    D[:] .= read(f["diameters"]["diameters"])
     N_written = 0
     for t in saved_at_times
         N_written += 1
         r[:, :, N_written] .= read(f["positions"][string(t)])
-        D[:, N_written] .= read(f["diameters"][string(t)])
         if velocities
             v[:, :, N_written] .= read(f["velocities"][string(t)])
         end
@@ -453,7 +452,14 @@ function read_continuously_hard_sphere_simulation(filename; original=false, velo
         r = find_original_trajectories(r, box_sizes)
     end
 
-    dt_arr, t1_t2_pair_array = find_allowed_t1_t2_pair_array(saved_at_times; doublefactor=10)
+
+    if time_origins == "quasilog"
+        dt_arr, t1_t2_pair_array = find_allowed_t1_t2_pair_array_quasilog(saved_at_times; doublefactor=10)
+    elseif typeof(time_origins) == Int
+        dt_arr, t1_t2_pair_array =  find_allowed_t1_t2_pair_array_log_multstarts(saved_at_times, time_origins)
+    else
+        error("Specify time origins")
+    end
     s = SingleComponentSimulation(N, Ndims, r, v, F, D, saved_at_times*dt, box_sizes, dt_arr, t1_t2_pair_array, filename)
     calculate_forces!(s, forcestype)
     return s
@@ -535,7 +541,7 @@ function find_original_trajectories(r, box_sizes)
     return rr
 end
 
-function find_exponential_time_array(maxsteps; doublefactor=10)
+function find_quasilog_time_array(maxsteps; doublefactor=10)
     save_array = Int64[]
     t = 0
     dt = 1
@@ -551,9 +557,9 @@ function find_exponential_time_array(maxsteps; doublefactor=10)
     return save_array
 end
 
-function find_allowed_t1_t2_pair_array(t_array; doublefactor=150)
+function find_allowed_t1_t2_pair_array_quasilog(t_array; doublefactor=150)
     maxt = t_array[end]-t_array[1]
-    dt_array = find_exponential_time_array(maxt; doublefactor=doublefactor)
+    dt_array = find_quasilog_time_array(maxt; doublefactor=doublefactor)
     t1_t2_pair_array = Vector{Array{Int64, 2}}()
     for dt in dt_array
         tstart_arr = zeros(Int64, 0, 2)
@@ -567,5 +573,50 @@ function find_allowed_t1_t2_pair_array(t_array; doublefactor=150)
     end
     return dt_array, t1_t2_pair_array
 end
+
+function find_log_time_array_multiple_starts(log_factor, N_starts, N_max)
+    start_times = 0:(N_max÷N_starts):N_max
+    when_to_save = Int[collect(start_times)...]
+    for i_start in start_times
+        t = 1
+        while t <= N_max
+            push!(when_to_save, t+i_start)
+            t *= log_factor
+            t = ceil(Int, t)
+        end
+    end
+    push!(when_to_save, N_max)
+    return sort(unique(when_to_save[when_to_save .<= N_max]))
+end
+
+
+function find_allowed_t1_t2_pair_array_log_multstarts(t_array, N_starts)
+    dt = t_array[2] - t_array[1]
+    t_integer_array = round.(Int, t_array/dt)
+    maxt = t_integer_array[end]
+
+    dt_array = find_log_time_array_multiple_starts(1.3, 1, maxt)
+    @assert all(dt in  t_integer_array for dt in dt_array)
+
+    t1_t2_pair_array = Vector{Array{Int64, 2}}()
+    for dt in dt_array
+        tstart_arr = Vector{Vector{Int64}}()
+        for t1 in 0:(maxt÷N_starts):maxt
+            t2 = t1 + dt
+            if t2 > maxt
+                break
+            end
+            @assert t2 in t_integer_array
+            @assert t1 in t_integer_array
+            it1 = findfirst(isequal(t1), t_integer_array)
+            it2 = findfirst(isequal(t2), t_integer_array)
+            push!(tstart_arr, [it1, it2])
+        end
+        push!(t1_t2_pair_array, stack(tstart_arr)')
+    end
+    return dt_array, t1_t2_pair_array
+end
+
+
 
 calculate_forces!(s, forcestype::Bool) = forcestype ? error("Specify force type") : nothing

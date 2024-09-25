@@ -14,7 +14,7 @@ Returns:
     An array contaning the mean squared displacement
     An array contaning the mean squared displacement per particle
 """
-function find_mean_squared_displacement(r, dt_array, t1_t2_pair_array)
+function find_mean_squared_displacement(r, dt_array, t1_t2_pair_array; verbose=true)
     dims , N, _ = size(r)  
     N_dt = length(dt_array)
     msd_per_particle = zeros(N, N_dt)

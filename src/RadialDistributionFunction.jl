@@ -22,9 +22,6 @@ end
 
 function gr2_kernel!(g_r_acc, r1, r2, task, Ntasks, N_timesteps, N1, N2, xbox_size, ybox_size, binsize, Nbins)
 	for t = task:Ntasks:N_timesteps
-		if task == 1
-			@show t, N_timesteps
-		end
 		for particle1 = 1:N1
 			@inbounds for particle2 = particle1+1:N2
 				dx = r1[1, particle1, t] - r2[1, particle2, t]
@@ -70,7 +67,7 @@ function find_radial_distribution_function3D(r1, r2, Nbins, box_sizes, bin_edges
 end
 
 function find_radial_distribution_function2D(r1, r2, Nbins, box_sizes, bin_edges, Ntasks)
-    println("Calculating g(r), with $Ntasks tasks distributed over $(Threads.nthreads()) threads")
+    println("Calculating g(r), with $Ntasks tasks distributed over $(Ntasks) threads")
     @assert length(box_sizes) == 2
 
     Ndim, N1, N_timesteps = size(r1)
@@ -84,7 +81,7 @@ function find_radial_distribution_function2D(r1, r2, Nbins, box_sizes, bin_edges
     xbox_size = box_sizes[1]
     ybox_size = box_sizes[2]
     g_r_acc = zeros(Int64, Nbins, Ntasks)
-    @time Threads.@threads for task = 1:Ntasks
+    Threads.@threads for task = 1:Ntasks
 		gr2_kernel!(g_r_acc, r1, r2, task, Ntasks, N_timesteps, N1, N2, xbox_size, ybox_size, binsize, Nbins)
 	end
 	g_r_acc = sum(g_r_acc, dims=2)[:]

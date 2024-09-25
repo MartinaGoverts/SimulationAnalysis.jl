@@ -1,0 +1,77 @@
+using Test, SimulationAnalysis
+
+file = "test/data/test_trajectory.h5"
+
+# Load the trajectory
+
+
+
+# tests
+
+@testset "read trajectory" begin
+    traj = SimulationAnalysis.read_continuously_hard_sphere_simulation(file; original=false, velocities=false, forcestype=false, time_origins=10)
+
+    @test traj.N == 1000
+    @test size(traj.r_array) == (2, 1000, 738)
+    @test size(traj.v_array) == (1, 1, 1)
+    @test size(traj.F_array) == (1, 1, 1)
+
+    @test size(traj.D_array) == (1000, )
+    @test size(traj.t_array) == (738, )
+end
+
+@testset "KSpace" begin
+    traj = SimulationAnalysis.read_continuously_hard_sphere_simulation(file; original=false, velocities=false, forcestype=false, time_origins=10)
+
+    kspace = SimulationAnalysis.construct_k_space(traj, (0.0, 3.0); kfactor=1, negative=true, rectangular=false)
+    kspace = SimulationAnalysis.construct_k_space(traj, (0.0, 3.0); kfactor=1, negative=true, rectangular=true)
+    kspace = SimulationAnalysis.construct_k_space(traj, (0.0, 3.0); kfactor=1, negative=false, rectangular=false)
+
+    # compute structure factor
+
+    S = SimulationAnalysis.find_structure_factor(traj; kmin=2.0, kmax=2.4, kfactor=1)
+
+    # compute ISF
+
+    ISF = SimulationAnalysis.find_intermediate_scattering_function(traj; kmin=2.0, kmax=2.4, kfactor=1)
+
+    @test abs(ISF[1] - S) < 1e-2
+
+    # compute self ISF
+
+    sISF = SimulationAnalysis.find_self_intermediate_scattering_function(traj, kspace; kmin=2.0, kmax=2.4)
+
+end
+
+
+@testset "g(r)" begin
+    traj = SimulationAnalysis.read_continuously_hard_sphere_simulation(file; original=false, velocities=false, forcestype=false, time_origins=10)
+
+    gr =  SimulationAnalysis.find_radial_distribution_function(traj, 10,  10.0)
+end
+
+@testset "Neighborlists" begin
+    traj = SimulationAnalysis.read_continuously_hard_sphere_simulation(file; original=false, velocities=false, forcestype=false, time_origins=10)
+
+    neighborlists = @time SimulationAnalysis.find_distance_neighborlists(traj, 1.2)
+
+    @test length(neighborlists) == 738
+
+    @test length(neighborlists[1]) == 1000
+
+
+    neighborlists = @time SimulationAnalysis.find_voronoi_neighborlists(traj)
+
+    @test length(neighborlists) == 738
+
+    @test length(neighborlists[1]) == 1000
+end
+
+
+@testset "MSD" begin
+    traj = SimulationAnalysis.read_continuously_hard_sphere_simulation(file; original=false, velocities=false, forcestype=false, time_origins=10)
+
+    MSD = SimulationAnalysis.find_mean_squared_displacement(traj)
+
+    @test length(MSD) == length(traj.dt_array)
+end
