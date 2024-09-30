@@ -61,3 +61,28 @@ function find_CB(s, neighbourlists1, neighbourlists2)
     end
     return CB
 end
+
+
+
+
+function find_χBB(s, neighbourlists1, neighbourlists2, r, N_angles)
+    dt_arr = s.dt_array
+    t1_t2_pair_array = s.t1_t2_pair_array
+    N_particles = s.N
+    χBB = zeros(length(dt_arr))
+
+    for iδt in eachindex(dt_array)
+        pairs_idt = t1_t2_pair_array[iδt]
+        Npairs = size(pairs_idt, 1)
+        C_temp = 0.0
+        pairs_computed = 0
+        for ipair = 1:Npairs
+            t1 = pairs_idt[ipair, 1]
+            neighbourlist1 = neighbourlists1[t1][particle_i]
+            t2 = pairs_idt[ipair, 2]
+            neighbourlist2 = neighbourlists2[t2][particle_i]
+        end
+    end
+
+    return χBB
+end
