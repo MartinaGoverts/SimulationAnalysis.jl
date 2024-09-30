@@ -83,14 +83,16 @@ function compute_smoothed_gaussian(r_array, i, j, r, N_angles, σ, ::Val{2})
 end
 
 
-function compute_smoothed_gaussian(r_array, i, j, r, N_angles, σ, ::Val{3})
+function compute_smoothed_gaussian(r_array, i, j, r, N_angles, σ, ::Val{3}, box_size)
     ri = SVector{3, Float64}(r_array[1, i], r_array[2, i], r_array[3, i])
     rj = SVector{3, Float64}(r_array[1, j], r_array[2, j], r_array[3, j])
 
     r_ij = rj - ri
+    r_ij = r_ij - box_size*round.(r_ij./box_size)
+
     dcostheta = 2/N_angles
     dphi = π/N_angles
-    costheta_arr = range(-1+dtheta/2, stop=1-dtheta/2, length=N_angles)
+    costheta_arr = range(-1+dcostheta/2, stop=1-dcostheta/2, length=N_angles)
     phi_arr = range(dphi/2, stop=π-dphi/2, length=N_angles)
     gaussian = 0.0
     for costheta = costheta_arr
@@ -120,6 +122,7 @@ function find_χBB(s, neighbourlists1, neighbourlists2, r, N_angles, σ, CB_mean
     χBB = zeros(length(dt_arr))
     δCb = zeros(N_particles)
     r_array = s.r_array
+    box_size = s.box_sizes[1]
 
     for iδt in eachindex(dt_array)
         pairs_idt = t1_t2_pair_array[iδt]
@@ -140,7 +143,7 @@ function find_χBB(s, neighbourlists1, neighbourlists2, r, N_angles, σ, CB_mean
             r_array_t2 = @views r_array[:, :, t2]
             for i in 1:N_particles
                 for j in 1:N_particles
-                    gaussian = compute_smoothed_gaussian(r_array_t2, i, j, r, N_angles, σ, valdims)
+                    gaussian = compute_smoothed_gaussian(r_array_t2, i, j, r, N_angles, σ, valdims, box_size)
                     χBB[iδt] += δCb[i]*δCb[j]*gaussian
                 end
             end
