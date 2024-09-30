@@ -56,7 +56,7 @@ function find_absolute_distance_neighborlists(s, rc)
     rc2 = rc^2
     neighbourlists = Vector{Vector{Vector{Int}}}(undef, Nt)
     x = rand(size(r_array, 1), N)*s.box_sizes[1]
-    box = CellListMap.Box(s.box_sizes, min(s.box_sizes[1], rc*1.1))
+    box = CellListMap.Box(s.box_sizes, min(s.box_sizes[1], rc))
     celllist = CellList(x, box, parallel=false)
     auxilliary_struct = CellListMap.AuxThreaded(celllist)
 
