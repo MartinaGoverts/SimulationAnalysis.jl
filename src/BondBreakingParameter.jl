@@ -63,60 +63,34 @@ function find_CB(s, neighbourlists1, neighbourlists2)
 end
 
 
-function find_points_unit_sphere(r, N_angles, ::Val{2})
-    dtheta = 2π/N_angles
-    theta_arr = range(dtheta/2, stop=2π-dtheta/2, length=N_angles)
-    points = SVector{2, Float64}[]
-    for i in 1:N_angles
-        theta = theta_arr[i]
-        point = SVector{2, Float64}(r*cos(theta), r*sin(theta))
-        push!(points, point)
-    end
-    return points
-end
-
-function find_points_unit_sphere(r, N_angles, ::Val{3})
-    dcostheta = 2/N_angles
-    dphi = π/N_angles
-    costheta_arr = range(-1+dcostheta/2, stop=1-dcostheta/2, length=N_angles)
-    phi_arr = range(dphi/2, stop=π-dphi/2, length=N_angles)
-    points = SVector{3, Float64}[]
-    for costheta = costheta_arr
-        theta = acos(costheta)
-        for phi = phi_arr
-            point = SVector{3, Float64}(r*cos(phi)*sin(theta), r*sin(phi)*sin(theta), r*cos(theta))
-            push!(points, point)
-        end
-    end
-    return points
-end
-
-
-function compute_smoothed_gaussian(r_array, i, j, points, σ, box_size)
+function compute_smoothed_gaussian(r_array, i, j, r, σ, box_size, ::Val{3}) 
     ri = SVector{3, Float64}(r_array[1, i], r_array[2, i], r_array[3, i])
     rj = SVector{3, Float64}(r_array[1, j], r_array[2, j], r_array[3, j])
 
     r_ij = rj - ri
     r_ij = r_ij - box_size*round.(r_ij./box_size)
 
-    gaussian = 0.0
-    for rvec in points
-        x = rvec + r_ij
-        x2 = dot(x, x)
-        arg = -x2/(4σ^2)
-        gaussian += exp(arg)
+    r_ij_length = norm(r_ij, 2)
+    if i != j
+        arg1 = -(r + r_ij_length)^2/(4σ^2)
+        term1 = exp(arg1)
+        arg2 = (r * r_ij_length)/(σ^2)
+        term2 = exp(arg2)
+        gaussian = term1*(term2-1)
+        return 2σ^2*gaussian/(π*r_ij_length*r)
+    else
+        gaussian = 2*exp(-r^2/(4σ^2))/π   
+        return gaussian     
     end
-    gaussian /= length(points)
-    return gaussian
 end
 
 
-function find_χBB(s, neighbourlists1, neighbourlists2,neighbourlistsχBB, r, N_angles, σ, CB_mean)
+function find_χBB(s, neighbourlists1, neighbourlists2, r, σ, CB_mean)
     dims = size(s.r_array, 1)
-    find_χBB(s, neighbourlists1, neighbourlists2, neighbourlistsχBB, r, N_angles, σ, CB_mean, Val(dims))
+    find_χBB(s, neighbourlists1, neighbourlists2, r, σ, CB_mean, Val(dims))
 end
 
-function find_χBB(s, neighbourlists1, neighbourlists2, neighbourlistsχBB, r, N_angles, σ, CB_mean, valdims::Val{dims}) where dims
+function find_χBB(s, neighbourlists1, neighbourlists2, r,  σ, CB_mean, valdims::Val{dims}) where dims
     dt_arr = s.dt_array
     t1_t2_pair_array = s.t1_t2_pair_array
     N_particles = s.N
@@ -125,10 +99,8 @@ function find_χBB(s, neighbourlists1, neighbourlists2, neighbourlistsχBB, r, N
     r_array = s.r_array
     box_size = s.box_sizes[1]
     dt_array = s.dt_array
-    points = find_points_unit_sphere(r, N_angles, valdims)
 
     for iδt in eachindex(dt_array)
-        @show iδt
         pairs_idt = t1_t2_pair_array[iδt]
         Npairs = size(pairs_idt, 1)
         for ipair = 1:Npairs
@@ -145,15 +117,15 @@ function find_χBB(s, neighbourlists1, neighbourlists2, neighbourlistsχBB, r, N
                 end
             end
             r_array_t2 = @views r_array[:, :, t2]
-            neighlist = neighbourlistsχBB[t2]
             for i in 1:N_particles
-                for j in neighlist[i]
-                    gaussian = compute_smoothed_gaussian(r_array_t2, i, j, points, σ, box_size)
+                for j in 1:N_particles
+                    gaussian = compute_smoothed_gaussian(r_array_t2, i, j, r, σ, box_size, valdims)
                     χBB[iδt] += δCb[i]*δCb[j]*gaussian
                 end
             end
         end
         χBB[iδt] *=  σ*sqrt(π)/(2prod(s.box_sizes)*Npairs)
+        
     end
 
     return χBB
