@@ -1,5 +1,5 @@
 
-function find_distance_neighborlists(s, rc; ζ = 0.2)
+function find_relative_distance_neighborlists(s, rc; ζ = 0.2)
     r_array = s.r_array
     D_array = s.D_array
     Nt = size(r_array, 3)
@@ -36,6 +36,49 @@ function find_distance_neighborlists(s, rc; ζ = 0.2)
 
         map_pairwise!(
             (x,y,i,j,d2,neighbourlist_t) -> push_pair!(i, j, d2, neighbourlist_t, D_array, rc2, ζ),
+            neighbourlist_t,
+            box,
+            celllist,
+            parallel=false
+        )
+
+        neighbourlists[t] = neighbourlist_t
+    end
+    return neighbourlists
+end
+
+
+function find_absolute_distance_neighborlists(s, rc)
+    r_array = s.r_array
+    D_array = s.D_array
+    Nt = size(r_array, 3)
+    N = size(r_array, 2)
+    rc2 = rc^2
+    neighbourlists = Vector{Vector{Vector{Int}}}(undef, Nt)
+    x = rand(size(r_array, 1), N)*s.box_sizes[1]
+    box = CellListMap.Box(s.box_sizes, min(s.box_sizes[1], rc*1.1))
+    celllist = CellList(x, box, parallel=false)
+    auxilliary_struct = CellListMap.AuxThreaded(celllist)
+
+    function push_pair!(i, j, d2, neighbourlist_t, rc2)
+        i == j && return
+        if d2  < rc2
+            push!(neighbourlist_t[i], j)
+            push!(neighbourlist_t[j], i)
+        end
+        return neighbourlist_t
+    end
+
+    for t = 1:Nt
+        neighbourlist_t = Vector{Vector{Int}}(undef, N)
+        for i = 1:N
+            neighbourlist_t[i] = Vector{Int}()
+            sizehint!(neighbourlist_t[i], 8)
+        end
+        celllist = @views UpdateCellList!(r_array[:, :, t], box, celllist, auxilliary_struct, parallel=false)
+
+        map_pairwise!(
+            (x,y,i,j,d2,neighbourlist_t) -> push_pair!(i, j, d2, neighbourlist_t, rc2),
             neighbourlist_t,
             box,
             celllist,
