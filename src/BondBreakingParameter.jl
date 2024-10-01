@@ -66,22 +66,42 @@ end
 function compute_smoothed_gaussian(r_array, i, j, r, σ, box_size, ::Val{3}) 
     ri = SVector{3, Float64}(r_array[1, i], r_array[2, i], r_array[3, i])
     rj = SVector{3, Float64}(r_array[1, j], r_array[2, j], r_array[3, j])
-
-    r_ij = rj - ri
-    r_ij = r_ij - box_size*round.(r_ij./box_size)
-
-    r_ij_length = norm(r_ij, 2)
-    if i != j
-        arg1 = -(r + r_ij_length)^2/(4σ^2)
-        term1 = exp(arg1)
-        arg2 = (r * r_ij_length)/(σ^2)
-        term2 = exp(arg2)
-        gaussian = term1*(term2-1)
-        return 2σ^2*gaussian/(π*r_ij_length*r)
-    else
-        gaussian = 2*exp(-r^2/(4σ^2))/π   
-        return gaussian     
+    V = box_size^3
+    prefactor = π^(-3/2)*σ^3 / (V*r)
+    gaussian = 0.0
+    for imagex = (-1, 0, 1), imagey = (-1, 0, 1), imagez = (-1, 0, 1)
+        r_ij = rj - ri + SVector{3, Float64}(imagex*box_size, imagey*box_size, imagez*box_size)
+        r_ij_length = norm(r_ij, 2)
+        if !(r_ij_length ≈ 0.0) 
+            term1 = exp(-(r_ij_length - r)^2/(4σ^2))
+            term2 = exp(-(r_ij_length + r)^2/(4σ^2))
+            gaussian += prefactor*(term1 - term2)/r_ij_length
+        else # same particle, same image
+            gaussian += 2*exp(-r^2/(4σ^2))/π   
+        end
     end
+    return gaussian
+end
+
+
+function compute_smoothed_gaussian(r_array, i, j, r, σ, box_size, ::Val{2})
+    ri = SVector{2, Float64}(r_array[1, i], r_array[2, i])
+    rj = SVector{2, Float64}(r_array[1, j], r_array[2, j])
+    V = box_size^2
+    prefactor = σ*π^(-1/2)/(2V)
+    gaussian = 0.0
+    for imagex = (-1, 0, 1), imagey = (-1, 0, 1)
+        r_ij = rj - ri + SVector{2, Float64}(imagex*box_size, imagey*box_size)
+        r_ij_length = norm(r_ij, 2)
+        if !(r_ij_length ≈ 0.0) 
+            term1 = exp(-(r_ij_length^2 + r^2)/(4σ^2))
+            term2 = besseli(0, r*r_ij_length/(2σ^2))
+            gaussian += prefactor*(term1*term2)
+        else # same particle, same image
+            gaussian += 2*exp(-r^2/(4σ^2))/π   
+        end
+    end
+    return gaussian
 end
 
 
@@ -124,7 +144,7 @@ function find_χBB(s, neighbourlists1, neighbourlists2, r,  σ, CB_mean, valdims
                 end
             end
         end
-        χBB[iδt] *=  σ*sqrt(π)/(2prod(s.box_sizes)*Npairs)
+        χBB[iδt] /= Npairs
         
     end
 

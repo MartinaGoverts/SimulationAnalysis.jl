@@ -21,7 +21,7 @@ Find clusters of mobile particles in a system. A cluster is defined as a set of 
 
 # Arguments
 - `mobile_particles::Set{Int}`: The indices of the mobile particles. 
-- `neighbourlists::Vector{Vector{Vector{Int}}}`: The neighbourlists of the particles.
+- `neighbourlists::Vector{Vector{Int}}`: The neighbourlists of the particles.
 
 # Returns
 - `clusters::Vector{Set{Int}}`: The clusters of mobile particles.
