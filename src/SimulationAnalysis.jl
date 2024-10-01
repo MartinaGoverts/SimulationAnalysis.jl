@@ -2,7 +2,7 @@
 module SimulationAnalysis
 import Base.show, Quickhull
 using HDF5, Polyester, Tullio, LoopVectorization, Base.Threads, Parsers, DelimitedFiles, Random, IfElse, Dierckx, ProgressMeter, OffsetArrays, ChunkSplitters, CellListMap, StaticArrays
-
+using LinearAlgebra
 
 abstract type Simulation end
 import Base.step
