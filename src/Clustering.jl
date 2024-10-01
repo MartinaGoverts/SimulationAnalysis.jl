@@ -20,16 +20,15 @@ end
 Find clusters of mobile particles in a system. A cluster is defined as a set of particles that are connected by a bond. The function returns a vector of sets, where each set contains the indices of the particles in a cluster.
 
 # Arguments
-- `mobile_particles::Vector{Int}`: The indices of the mobile particles.
+- `mobile_particles::Set{Int}`: The indices of the mobile particles. 
 - `neighbourlists::Vector{Vector{Vector{Int}}}`: The neighbourlists of the particles.
 
 # Returns
 - `clusters::Vector{Set{Int}}`: The clusters of mobile particles.
 
 """
-function find_mobile_clusters(mobile_particles, neighbourlists)
+function find_mobile_clusters(mobile_particles::Set{Int}, neighbourlists)
     clusters = Vector{Set{Int}}()
-    # N_mobile = length(mobile_particles)
     while !isempty(mobile_particles)
         particle_i = first(mobile_particles)
         delete!(mobile_particles, particle_i)
