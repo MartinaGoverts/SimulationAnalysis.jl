@@ -101,12 +101,12 @@ function compute_smoothed_gaussian(r_array, i, j, r, σ, box_size, ::Val{3})
         imagex, imagey, imagez = n
         r_ij = rj - ri + SVector{3, Float64}(imagex*box_size, imagey*box_size, imagez*box_size)
         r_ij_length = norm(r_ij, 2)
-        if !(r_ij_length ≈ 0.0) 
+        if i == j && imagex == 0 && imagey == 0 && imagez == 0 # same particle, same image
+            gaussian += 2*exp(-r^2/(4σ^2))/π   
+        else 
             term1 = exp(-(r_ij_length - r)^2/(4σ^2))
             term2 = exp(-(r_ij_length + r)^2/(4σ^2))
             gaussian += prefactor*(term1 - term2)/r_ij_length
-        else # same particle, same image
-            gaussian += 2*exp(-r^2/(4σ^2))/π   
         end
     end
     return gaussian
@@ -133,12 +133,12 @@ function compute_smoothed_gaussian(r_array, i, j, r, σ, box_size, ::Val{2})
         imagex, imagey = n
         r_ij = rj - ri + SVector{2, Float64}(imagex*box_size, imagey*box_size)
         r_ij_length = norm(r_ij, 2)
-        if !(r_ij_length ≈ 0.0) 
+        if i == j && imagex == 0 && imagey == 0 # same particle, same image
+            gaussian += 2*exp(-r^2/(4σ^2))/π 
+        else 
             term1 = exp(-(r_ij_length^2 + r^2)/(4σ^2))
             term2 = besseli0(r*r_ij_length/(2σ^2))
             gaussian += prefactor*(term1*term2)
-        else # same particle, same image
-            gaussian += 2*exp(-r^2/(4σ^2))/π   
         end
     end
     return gaussian
