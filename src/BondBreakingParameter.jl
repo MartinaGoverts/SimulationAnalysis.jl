@@ -95,7 +95,7 @@ function compute_smoothed_gaussian(r_array, i, j, r, σ, box_size, ::Val{2})
         r_ij_length = norm(r_ij, 2)
         if !(r_ij_length ≈ 0.0) 
             term1 = exp(-(r_ij_length^2 + r^2)/(4σ^2))
-            term2 = besseli(0, r*r_ij_length/(2σ^2))
+            term2 = besseli0(r*r_ij_length/(2σ^2))
             gaussian += prefactor*(term1*term2)
         else # same particle, same image
             gaussian += 2*exp(-r^2/(4σ^2))/π   
