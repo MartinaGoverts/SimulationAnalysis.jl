@@ -69,7 +69,36 @@ function compute_smoothed_gaussian(r_array, i, j, r, σ, box_size, ::Val{3})
     V = box_size^3
     prefactor = π^(-3/2)*σ^3 / (V*r)
     gaussian = 0.0
-    for imagex = (-1, 0, 1), imagey = (-1, 0, 1), imagez = (-1, 0, 1)
+    for n = (
+        (-1, -1, -1),
+        (-1, -1, 0),
+        (-1, -1, 1),
+        (-1, 0, -1),
+        (-1, 0, 0), 
+        (-1, 0, 1), 
+        (-1, 1, -1),
+        (-1, 1, 0), 
+        (-1, 1, 1), 
+        (0, -1, -1),
+        (0, -1, 0), 
+        (0, -1, 1), 
+        (0, 0, -1), 
+        (0, 0, 0),  
+        (0, 0, 1),  
+        (0, 1, -1), 
+        (0, 1, 0),  
+        (0, 1, 1),  
+        (1, -1, -1),
+        (1, -1, 0), 
+        (1, -1, 1), 
+        (1, 0, -1), 
+        (1, 0, 0),  
+        (1, 0, 1),  
+        (1, 1, -1),
+        (1, 1, 0),
+        (1, 1, 1),
+        )
+        imagex, imagey, imagez = n
         r_ij = rj - ri + SVector{3, Float64}(imagex*box_size, imagey*box_size, imagez*box_size)
         r_ij_length = norm(r_ij, 2)
         if !(r_ij_length ≈ 0.0) 
@@ -90,7 +119,18 @@ function compute_smoothed_gaussian(r_array, i, j, r, σ, box_size, ::Val{2})
     V = box_size^2
     prefactor = σ*π^(-1/2)/(2V)
     gaussian = 0.0
-    for imagex = (-1, 0, 1), imagey = (-1, 0, 1)
+    for n = (
+        (-1, -1),
+        (-1, 0),
+        (-1, 1),
+        (0, -1),
+        (0, 0),
+        (0, 1),
+        (1, -1),
+        (1, 0),
+        (1, 1),
+        )
+        imagex, imagey = n
         r_ij = rj - ri + SVector{2, Float64}(imagex*box_size, imagey*box_size)
         r_ij_length = norm(r_ij, 2)
         if !(r_ij_length ≈ 0.0) 
@@ -121,6 +161,7 @@ function find_χBB(s, neighbourlists1, neighbourlists2, r,  σ, CB_mean, valdims
     dt_array = s.dt_array
 
     for iδt in eachindex(dt_array)
+        @show iδt
         pairs_idt = t1_t2_pair_array[iδt]
         Npairs = 1#size(pairs_idt, 1)
         for ipair = 1:Npairs
