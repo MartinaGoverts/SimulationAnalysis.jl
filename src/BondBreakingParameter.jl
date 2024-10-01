@@ -130,3 +130,6 @@ function find_χBB(s, neighbourlists1, neighbourlists2, r,  σ, CB_mean, valdims
 
     return χBB
 end
+
+
+

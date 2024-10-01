@@ -21,6 +21,7 @@ include("F4_diagonal.jl")
 include("OverlapFunction.jl")
 include("Neighborlists.jl")
 include("BondBreakingParameter.jl")
+include("Clustering.jl")
 include("Utils.jl")
 
 
