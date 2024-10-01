@@ -53,7 +53,7 @@ end
 @testset "Neighborlists" begin
     traj = SimulationAnalysis.read_continuously_hard_sphere_simulation(file; original=false, velocities=false, forcestype=false, time_origins=10)
 
-    neighborlists = @time SimulationAnalysis.find_distance_neighborlists(traj, 1.2)
+    neighborlists = @time SimulationAnalysis.find_absolute_distance_neighborlists(traj, 1.2)
 
     @test length(neighborlists) == 738
 

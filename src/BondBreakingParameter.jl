@@ -122,7 +122,7 @@ function find_χBB(s, neighbourlists1, neighbourlists2, r,  σ, CB_mean, valdims
 
     for iδt in eachindex(dt_array)
         pairs_idt = t1_t2_pair_array[iδt]
-        Npairs = size(pairs_idt, 1)
+        Npairs = 1#size(pairs_idt, 1)
         for ipair = 1:Npairs
             t1 = pairs_idt[ipair, 1]
             t2 = pairs_idt[ipair, 2]
