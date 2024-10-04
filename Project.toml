@@ -23,6 +23,11 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Tullio = "bc48ee85-29a4-5162-ae0b-a64e1601d4bc"
 
 [compat]
+
+
+
+
+Polyester = "0.7"
 Tullio = "0.3"
 CellListMap = "0.9"
 Dierckx = "0.5"
