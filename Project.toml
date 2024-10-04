@@ -23,16 +23,12 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Tullio = "bc48ee85-29a4-5162-ae0b-a64e1601d4bc"
 
 [compat]
+LoopVectorization = "0.12"
 ChunkSplitters = "3"
-
 DelimitedFiles = "1"
-
 Quickhull = "0.2"
-
 Parsers = "2"
-
 Bessels = "0.2"
-
 HDF5 = "0.17"
 StaticArrays = "1"
 Polyester = "0.7"
