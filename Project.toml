@@ -24,3 +24,4 @@ Tullio = "bc48ee85-29a4-5162-ae0b-a64e1601d4bc"
 
 [compat]
 OffsetArrays = "1"
+IfElse = "0.1"
