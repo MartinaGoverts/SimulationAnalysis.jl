@@ -24,3 +24,19 @@ Tullio = "bc48ee85-29a4-5162-ae0b-a64e1601d4bc"
 
 [compat]
 DelimitedFiles = "1"
+
+Quickhull = "0.2"
+
+Parsers = "2"
+
+Bessels = "0.2"
+
+HDF5 = "0.17"
+StaticArrays = "1"
+Polyester = "0.7"
+Tullio = "0.3"
+CellListMap = "0.9"
+Dierckx = "0.5"
+ProgressMeter = "1"
+OffsetArrays = "1"
+IfElse = "0.1"
