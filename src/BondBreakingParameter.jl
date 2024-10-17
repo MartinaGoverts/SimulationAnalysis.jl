@@ -145,12 +145,14 @@ function compute_smoothed_gaussian(r_array, i, j, r, σ, box_size, ::Val{2})
 end
 
 
-function find_χBB(s, neighbourlists1, neighbourlists2, r, σ, CB_mean)
+
+
+function find_χBB_smoothed(s, neighbourlists1, neighbourlists2, r, σ, CB_mean)
     dims = size(s.r_array, 1)
-    find_χBB(s, neighbourlists1, neighbourlists2, r, σ, CB_mean, Val(dims))
+    find_χBB_smoothed(s, neighbourlists1, neighbourlists2, r, σ, CB_mean, Val(dims))
 end
 
-function find_χBB(s, neighbourlists1, neighbourlists2, r,  σ, CB_mean, valdims::Val{dims}) where dims
+function find_χBB_smoothed(s, neighbourlists1, neighbourlists2, r,  σ, CB_mean, valdims::Val{dims}) where dims
     dt_arr = s.dt_array
     t1_t2_pair_array = s.t1_t2_pair_array
     N_particles = s.N
@@ -192,4 +194,79 @@ function find_χBB(s, neighbourlists1, neighbourlists2, r,  σ, CB_mean, valdims
 end
 
 
+function find_chi_BB(s, neighbourlists1, neighbourlists2, r_bin_edges::AbstractRange, cb; verbose=true)
+    Ndims = size(s.r_array, 1)
+    if Ndims == 2
+        return find_chi_BB_2D(s, neighbourlists1, neighbourlists2, r_bin_edges, cb, verbose)
+    elseif Ndims == 3
+        return find_chi_BB_3D(s, neighbourlists1, neighbourlists2, r_bin_edges, cb, verbose)
+    else
+        error("Only 2D and 3D are supported")
+    end
+end
+
+
+function find_chi_BB_3D(s, neighbourlists1, neighbourlists2, r_bin_edges::AbstractRange, cb, verbose)
+    box_size = s.box_sizes[1]
+    r_bin_width = step(r_bin_edges)
+    dt_array = s.dt_array
+    t1_t2_pair_array = s.t1_t2_pair_array
+    N_particles = s.N
+
+    χBB = zeros(length(dt_array), length(r_bin_edges)-1)
+    count_array = zeros(size(χBB)...)
+
+    Cb_i_all = zeros(N_particles, length(dt_array))
+    @threads for (iδt) in eachindex(dt_array)
+        if verbose
+            println("Computing χBB for iδt = $iδt")
+        end
+        cb_iδt = cb[iδt]
+        pairs_idt = t1_t2_pair_array[iδt]
+        Npairs = size(pairs_idt, 1)
+        χB_temp = 0.0
+        for ipair = 1:Npairs
+            t1 = pairs_idt[ipair, 1]
+            t2 = pairs_idt[ipair, 2]
+
+            for particle_i = 1:N_particles
+                neighbourlist1_i = neighbourlists1[t1][particle_i]
+                neighbourlist2_i = neighbourlists2[t2][particle_i]
+                Cb_i_all[particle_i, iδt] = CB_microkernel(neighbourlist1_i, neighbourlist2_i)
+            end
+
+            for particle_i = 1:N_particles
+                xi  = s.r_array[1, particle_i, t2]
+                yi  = s.r_array[2, particle_i, t2]
+                zi  = s.r_array[3, particle_i, t2]
+                CBnew_i = Cb_i_all[particle_i, iδt]
+                
+                for particle_j = particle_i+1:N_particles
+                    xj  = s.r_array[1, particle_j, t2]
+                    yj  = s.r_array[2, particle_j, t2]
+                    zj  = s.r_array[3, particle_j, t2]
+                    CBnew_j = Cb_i_all[particle_j, iδt]
+                    if CBnew_i < 100 && CBnew_j < 100
+                        χB_temp = (CBnew_i - cb_iδt)*(CBnew_j - cb_iδt)
+                        dx = xi - xj
+                        dx = dx - box_size*round(dx/box_size)
+                        dy = yi - yj
+                        dy = dy - box_size*round(dy/box_size)
+                        dz = zi - zj
+                        dz = dz - box_size*round(dz/box_size)
+                        r = sqrt(dx*dx + dy*dy + dz*dz)
+                        ir = ceil(Int, r/r_bin_width)
+                        if 1 <= ir <= length(r_bin_edges)-1
+                            count_array[iδt, ir] += 1
+                            χBB[iδt, ir] += χB_temp
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    r_bin_centers = (r_bin_edges[1:end-1] + r_bin_edges[2:end])/2
+    return dt_array, r_bin_centers, count_array, χBB
+end
 
