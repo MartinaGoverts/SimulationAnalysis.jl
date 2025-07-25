@@ -176,19 +176,19 @@ Computes the Voronoi neighborlists for a simulation.
 - `neighbourlists::Vector{Vector{Vector{Int}}}`: The Voronoi neighborlists.
 
 """
-function find_voronoi_neighborlists(s; max_distance_from_boundary=3.0, verbose=true)
+function find_voronoi_neighborlists(s; max_distance_from_boundary=3.0, verbose=true, indices=eachindex(s.t_array))
     dims = size(s.r_array, 1)
     if dims == 2
-        return find_voronoi_neighborlists(s, Val{2}(), max_distance_from_boundary, verbose)
+        return find_voronoi_neighborlists(s, Val{2}(), max_distance_from_boundary, verbose, indices)
     elseif dims == 3
-        return find_voronoi_neighborlists(s, Val{3}(), max_distance_from_boundary, verbose)
+        return find_voronoi_neighborlists(s, Val{3}(), max_distance_from_boundary, verbose, indices)
     else
         throw(ArgumentError("Only 2D and 3D simulations are supported."))
     end
 end
 
 
-function find_voronoi_neighborlists(s, ::Val{Ndims}, max_distance_from_boundary, verbose) where Ndims
+function find_voronoi_neighborlists(s, ::Val{Ndims}, max_distance_from_boundary, verbose, indices) where Ndims
     r_array = s.r_array
     Nt = size(r_array, 3)
     N = size(r_array, 2)
@@ -205,12 +205,16 @@ function find_voronoi_neighborlists(s, ::Val{Ndims}, max_distance_from_boundary,
         if verbose && t % 100 == 0
             println("$t / $Nt")
         end
+        neighbourlist_t = [Set{Int}() for _ in 1:N]
+        if !(t in indices)
+            neighbourlists[t] = collect.(neighbourlist_t)
+            continue
+        end
         num_particles_with_images = fill_r_array_with_images!(r_array_with_images, is_image_of, r_array, t, box_size, max_distance_from_boundary)
 
         tri = Quickhull.delaunay(@views(r_array_with_images[1:num_particles_with_images]))
         facs = new_facets(tri)
 
-        neighbourlist_t = [Set{Int}() for _ in 1:N]
 
         for triangle in facs
             triangle_points = triangle.data
