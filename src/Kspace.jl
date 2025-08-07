@@ -2,15 +2,17 @@
 """
     KSpace{dims, S, OA}
 
-A struct to hold the k-space information of a simulation.
+A struct to hold the reciprocal space (k-space) vectors for a simulation.
+
+This struct is usually created via [`construct_k_space`](@ref).
 
 # Fields
-- `s::S`: The simulation object.
-- `Nk::Int64`: The number of k-vectors.
-- `k_lengths::Array{Float64, 1}`: The lengths of the k-vectors.
-- `k_array::Array{Float64, 2}`: The k-vectors.
-- `kfactor::Int64`: The k-factor.
-- `cartesian_to_linear::OA`: A mapping from Cartesian to linear indices.
+- `s::S`: The `Simulation` object for which the k-space is defined.
+- `Nk::Int64`: The total number of k-vectors.
+- `k_lengths::Vector{Float64}`: A vector of length `Nk` containing the magnitude of each k-vector.
+- `k_array::Matrix{Float64}`: A `(dims, Nk)` matrix where each column is a k-vector `(kx, ky, kz, ...)`.
+- `kfactor::Int64`: An integer scaling factor used to determine the resolution of the k-space grid. A higher factor means a courser grid.
+- `cartesian_to_linear::OA`: An `OffsetArray` that maps the Cartesian grid indices `(ix, iy, iz, ...)` of a k-vector to its linear index in `k_lengths` and `k_array`.
 """
 struct KSpace{dims, S, OA}
     s::S
@@ -24,17 +26,24 @@ end
 """
     construct_k_space(s::Simulation, bounds; kfactor=1, negative=false, rectangular=false)
 
-Construct the k-space of a simulation.
+Constructs the k-space for a given simulation.
+
+This function generates a set of k-vectors based on the simulation box and specified parameters.
+The k-vectors are chosen from a grid with spacing `2π/L * kfactor`, where `L` is the box size in each dimension.
 
 # Arguments
-- `s::Simulation`: The simulation object.
-- `bounds`: The bounds of the k-space.
-- `kfactor=1`: The k-factor.
-- `negative=false`: Whether to include negative k-vectors.
-- `rectangular=false`: Whether to use a rectangular k-space.
+- `s::Simulation`: The simulation object (`SingleComponentSimulation` or `MultiComponentSimulation`).
+- `bounds`: A tuple or vector `(kmin, kmax)` specifying the range of magnitudes for the k-vectors. k-vectors with magnitude `k` such that `kmin < k < kmax` are included.
+
+# Keyword Arguments
+- `kfactor::Int=1`: An integer scaling factor for the k-vector grid resolution.
+- `negative::Bool=false`: If `true`, includes k-vectors with negative components for the first `d-1` dimensions.
+- `rectangular::Bool=false`: If `true`, a rectangular k-space grid is generated, and all k-vectors within the grid up to `kmax` are included, ignoring `kmin`. If `false`, k-vectors are selected from a spherical shell.
 
 # Returns
-- A `KSpace` object.
+- A `KSpace` object containing the generated k-vectors and related information.
+
+See also: [`KSpace`](@ref)
 """
 function construct_k_space(s::Simulation, bounds; kfactor=1, negative=false, rectangular=false)
     k_lengths, k_array, cartesian_to_linear = find_k_array(bounds, s.box_sizes, s.Ndims; kfactor=kfactor, negative=negative, rectangular=rectangular)
@@ -44,18 +53,20 @@ end
 """
     find_k_array(bounds, box_sizes, dims; kfactor=1, rectangular=false, negative=false)
 
-Find the k-vectors in a given k-space.
+Finds the k-vectors in a given k-space. This is a helper function for [`construct_k_space`](@ref).
 
 # Arguments
-- `bounds`: The bounds of the k-space.
-- `box_sizes`: The box sizes.
-- `dims`: The number of dimensions.
-- `kfactor=1`: The k-factor.
-- `rectangular=false`: Whether to use a rectangular k-space.
-- `negative=false`: Whether to include negative k-vectors.
+- `bounds`: A tuple or vector `(kmin, kmax)` specifying the range of magnitudes.
+- `box_sizes`: The dimensions of the simulation box.
+- `dims`: The number of dimensions (2 or 3).
+- `kfactor::Int=1`: K-vector grid resolution factor.
+- `rectangular::Bool=false`: Use a rectangular k-space grid.
+- `negative::Bool=false`: Include negative k-vector components.
 
 # Returns
-- A tuple containing the `k_lengths`, `k_array`, and `cartesian_to_linear`.
+- `k_lengths::Vector{Float64}`: Magnitudes of the k-vectors.
+- `k_array::Matrix{Float64}`: The k-vectors as columns in a matrix.
+- `cartesian_to_linear`: An `OffsetArray` mapping Cartesian indices to linear indices.
 """
 function find_k_array(bounds, box_sizes, dims; kfactor=1, rectangular=false, negative=false)
     if dims==3
@@ -70,17 +81,19 @@ end
 """
     find_k_array_3D(bounds, box_sizes; kfactor=1, rectangular=false, negative=false)
 
-Find the k-vectors in a 3D k-space.
+Generates a set of 3D k-vectors. This is a helper function for [`find_k_array`](@ref).
 
 # Arguments
-- `bounds`: The bounds of the k-space.
-- `box_sizes`: The box sizes.
-- `kfactor=1`: The k-factor.
-- `rectangular=false`: Whether to use a rectangular k-space.
-- `negative=false`: Whether to include negative k-vectors.
+- `bounds`: A tuple or vector `(kmin, kmax)` specifying the range of magnitudes.
+- `box_sizes`: The dimensions of the simulation box, e.g., `[Lx, Ly, Lz]`.
+- `kfactor::Int=1`: K-vector grid resolution factor.
+- `rectangular::Bool=false`: Use a rectangular k-space grid.
+- `negative::Bool=false`: Include negative k-vector components for x and y axes.
 
 # Returns
-- A tuple containing the `k_lengths`, `k_array`, and `cartesian_to_linear`.
+- `k_lengths::Vector{Float64}`: Magnitudes of the k-vectors.
+- `k_array::Matrix{Float64}`: The k-vectors as columns in a matrix.
+- `cartesian_to_linear`: An `OffsetArray` mapping Cartesian indices `(ix, iy, iz)` to linear indices.
 """
 function find_k_array_3D(bounds, box_sizes; kfactor=1, rectangular=false, negative=false)
     #bounds
@@ -131,17 +144,19 @@ end
 """
     find_k_array_2D(bounds, box_sizes; kfactor=1, rectangular=false, negative=false)
 
-Find the k-vectors in a 2D k-space.
+Generates a set of 2D k-vectors. This is a helper function for [`find_k_array`](@ref).
 
 # Arguments
-- `bounds`: The bounds of the k-space.
-- `box_sizes`: The box sizes.
-- `kfactor=1`: The k-factor.
-- `rectangular=false`: Whether to use a rectangular k-space.
-- `negative=false`: Whether to include negative k-vectors.
+- `bounds`: A tuple or vector `(kmin, kmax)` specifying the range of magnitudes.
+- `box_sizes`: The dimensions of the simulation box, e.g., `[Lx, Ly]`.
+- `kfactor::Int=1`: K-vector grid resolution factor.
+- `rectangular::Bool=false`: Use a rectangular k-space grid.
+- `negative::Bool=false`: Include negative k-vector components for the x-axis.
 
 # Returns
-- A tuple containing the `k_lengths`, `k_array`, and `cartesian_to_linear`.
+- `k_lengths::Vector{Float64}`: Magnitudes of the k-vectors.
+- `k_array::Matrix{Float64}`: The k-vectors as columns in a matrix.
+- `cartesian_to_linear`: An `OffsetArray` mapping Cartesian indices `(ix, iy)` to linear indices.
 """
 function find_k_array_2D(bounds, box_sizes; kfactor=1, rectangular=false, negative=false)
     #bounds

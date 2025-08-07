@@ -4,11 +4,14 @@ abstract type AbstractDensityModes end
 """
     SingleComponentDensityModes
 
-A struct to hold the density modes of a single-component simulation.
+A struct to hold the density modes `ρ(k,t)` for a single-component simulation.
+
+The density modes are defined as `ρ(k,t) = Σ_j exp(i * k ⋅ r_j(t))`, where the sum is over all particles `j`.
+This struct stores the real and imaginary parts of `ρ(k,t)` for various k-vectors and time steps.
 
 # Fields
-- `Re::Array{Float64, 2}`: The real part of the density modes.
-- `Im::Array{Float64, 2}`: The imaginary part of the density modes.
+- `Re::Matrix{Float64}`: The real part of the density modes, `Σ_j cos(k ⋅ rj)`. Dimensions are `(N_timesteps, Nk)`.
+- `Im::Matrix{Float64}`: The imaginary part of the density modes, `Σ_j sin(k ⋅ rj)`. Dimensions are `(N_timesteps, Nk)`.
 """
 struct SingleComponentDensityModes <: AbstractDensityModes
     Re::Array{Float64, 2}
@@ -22,11 +25,14 @@ end
 """
     MultiComponentDensityModes
 
-A struct to hold the density modes of a multi-component simulation.
+A struct to hold the density modes `ρ_s(k,t)` for each species `s` in a multi-component simulation.
+
+The density modes for each species are defined as `ρ_s(k,t) = Σ_j exp(i * k ⋅ r_j(t))`, where the sum is over all particles `j` of species `s`.
+This struct stores the real and imaginary parts of `ρ_s(k,t)` for various k-vectors and time steps.
 
 # Fields
-- `Re::Vector{Array{Float64, 2}}`: The real part of the density modes for each species.
-- `Im::Vector{Array{Float64, 2}}`: The imaginary part of the density modes for each species.
+- `Re::Vector{Matrix{Float64}}`: A vector where `Re[s]` is the real part of the density modes for species `s`. Each matrix has dimensions `(N_timesteps, Nk)`.
+- `Im::Vector{Matrix{Float64}}`: A vector where `Im[s]` is the imaginary part of the density modes for species `s`. Each matrix has dimensions `(N_timesteps, Nk)`.
 """
 struct MultiComponentDensityModes <: AbstractDensityModes
     Re::Vector{Array{Float64, 2}}
@@ -43,15 +49,20 @@ end
 """
     find_density_modes(s::SingleComponentSimulation, kspace::KSpace; verbose=true)
 
-Calculates the density modes for a single-component simulation.
+Calculates the density modes `ρ(k,t) = Σ_j exp(i * k ⋅ r_j(t))` for a single-component simulation.
+
+The calculation is performed for all k-vectors in `kspace` and for all time steps in the simulation.
+This function is computationally intensive. The `verbose` option can be used to monitor progress.
 
 # Arguments
-- `s::SingleComponentSimulation`: The simulation.
-- `kspace::KSpace`: The k-space.
-- `verbose::Bool=true`: Whether to print verbose output.
+- `s::SingleComponentSimulation`: The simulation data.
+- `kspace::KSpace`: The k-space vectors for which to calculate the density modes.
+- `verbose::Bool=true`: If `true`, prints progress and performance information to the console.
 
 # Returns
-- `SingleComponentDensityModes`: The density modes.
+- `SingleComponentDensityModes`: A struct containing the real and imaginary parts of the density modes.
+
+See also: [`SingleComponentDensityModes`](@ref), [`find_density_modes(::MultiComponentSimulation, ::KSpace)`](@ref)
 """
 function find_density_modes(s::SingleComponentSimulation, kspace::KSpace; verbose=true)
     Ndim, N, N_timesteps = size(s.r_array)
@@ -76,15 +87,20 @@ end
 """
     find_density_modes(s::MultiComponentSimulation, kspace::KSpace; verbose=true)
 
-Calculates the density modes for a multi-component simulation.
+Calculates the density modes `ρ_s(k,t) = Σ_j exp(i * k ⋅ r_j(t))` for each species `s` in a multi-component simulation.
+
+The calculation is performed for all k-vectors in `kspace` and for all time steps in the simulation.
+This function is computationally intensive. The `verbose` option can be used to monitor progress.
 
 # Arguments
-- `s::MultiComponentSimulation`: The simulation.
-- `kspace::KSpace`: The k-space.
-- `verbose::Bool=true`: Whether to print verbose output.
+- `s::MultiComponentSimulation`: The simulation data.
+- `kspace::KSpace`: The k-space vectors for which to calculate the density modes.
+- `verbose::Bool=true`: If `true`, prints progress and performance information to the console.
 
 # Returns
-- `MultiComponentDensityModes`: The density modes.
+- `MultiComponentDensityModes`: A struct containing the real and imaginary parts of the density modes for each species.
+
+See also: [`MultiComponentDensityModes`](@ref), [`find_density_modes(::SingleComponentSimulation, ::KSpace)`](@ref)
 """
 function find_density_modes(s::MultiComponentSimulation, kspace::KSpace; verbose=true)
     N_species = length(s.r_array)
@@ -135,19 +151,18 @@ end
 """
     _find_density_modes!(Reρ, Imρ, r, kspace)
 
-Calculate the density modes for a given simulation `r` and wave vector space `kspace`.
+In-place calculation of density modes.
 
-Reρ and Imρ arrays are preallocated arrays with size (N_timesteps, Nk) for each species of the simulation.
+This is a helper function that computes `ρ(k,t)` and stores the result in pre-allocated arrays.
 
 # Arguments
-- `Reρ`: preallocated array to store the real part of the density modes.
-- `Imρ`: preallocated array to store the imaginary part of the density modes.
-- `r`: array containing the positions of the particles at each time step. It has shape (Ndim, N, N_timesteps), where
-             Ndim is the number of dimensions, N is the number of particles and N_timesteps is the number of time steps.
-- `kspace`: the wave vector space used to calculate the density modes.
+- `Reρ`: A pre-allocated `(N_timesteps, Nk)` matrix to store the real part of the density modes.
+- `Imρ`: A pre-allocated `(N_timesteps, Nk)` matrix to store the imaginary part of the density modes.
+- `r`: A `(Ndims, N, N_timesteps)` array of particle positions.
+- `kspace`: A `KSpace` object containing the k-vectors.
 
 # Returns
-- `Nothing`: The `Reρ` and `Imρ` arrays are updated in-place.
+- `Nothing`: The `Reρ` and `Imρ` arrays are modified in-place.
 """
 function _find_density_modes!(Reρ, Imρ, r, kspace)
     Ndim, N, N_timesteps = size(r)

@@ -1,15 +1,21 @@
 """
     find_mean_squared_displacement(simulation::Simulation; per_particle=false)
 
-Calculates the mean squared displacement for a simulation.
+Calculates the mean squared displacement (MSD) for a given simulation.
+
+The MSD is defined as `<|r(t) - r(0)|^2>`, where the average is taken over all particles and time origins.
 
 # Arguments
-- `simulation::Simulation`: The simulation.
-- `per_particle=false`: Whether to return the mean squared displacement per particle.
+- `simulation::Simulation`: The simulation data.
+- `per_particle::Bool=false`: If `true`, the function returns the MSD calculated for each particle individually, in addition to the total MSD.
 
 # Returns
-- `msd`: The mean squared displacement.
-- `msd_per_particle`: The mean squared displacement per particle (if `per_particle` is true).
+If `per_particle` is `false` (default):
+- `msd::Vector{Float64}`: A vector containing the MSD for each time delay `Δt` in `simulation.dt_array`.
+
+If `per_particle` is `true`:
+- `msd::Vector{Float64}`: The total MSD vector.
+- `msd_per_particle::Matrix{Float64}`: A `(N, N_dt)` matrix of MSDs for each particle.
 """
 function find_mean_squared_displacement(simulation::Simulation; per_particle=false)
     msd, msd_per_particle = find_mean_squared_displacement(simulation.r_array, simulation.dt_array, simulation.t1_t2_pair_array)
@@ -22,21 +28,22 @@ end
 
 
 """
-    find_mean_squared_displacement(r, dt_array, t1_t2_pair_array; verbose=true)
+    find_mean_squared_displacement(r, dt_array, t1_t2_pair_array)
 
-Calculates the mean squared displacement from the t1, t2 pairs.
+Calculates the mean squared displacement (MSD) using pre-calculated time pairs.
+
+This is the core implementation for calculating the MSD. It iterates through particles and time pairs to compute the displacement.
 
 # Arguments
-- `r`: The positions of the particles.
-- `dt_array`: The array of time differences.
-- `t1_t2_pair_array`: The array of pairs of times.
-- `verbose=true`: Whether to print verbose output.
+- `r::Array{Float64, 3}`: A `(Ndims, N, N_timesteps)` array of particle positions.
+- `dt_array::Vector{Int}`: An array of time step differences (`Δt`).
+- `t1_t2_pair_array::Vector{Array{Int64, 2}}`: An array of `(t1, t2)` index pairs for each `Δt`.
 
 # Returns
-- `msd`: The mean squared displacement.
-- `msd_per_particle`: The mean squared displacement per particle.
+- `msd::Vector{Float64}`: A vector containing the MSD for each time delay `Δt` in `dt_array`.
+- `msd_per_particle::Matrix{Float64}`: A `(N, N_dt)` matrix of MSDs for each particle.
 """
-function find_mean_squared_displacement(r, dt_array, t1_t2_pair_array; verbose=true)
+function find_mean_squared_displacement(r, dt_array, t1_t2_pair_array)
     dims , N, _ = size(r)  
     N_dt = length(dt_array)
     msd_per_particle = zeros(N, N_dt)

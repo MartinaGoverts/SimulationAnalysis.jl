@@ -1,15 +1,20 @@
 """
-    find_overlap_function(s; a=0.5)
+    find_overlap_function(s::Simulation; a=0.5)
 
-Calculates the overlap function for a simulation.
+Calculates the overlap function `Q(t)`.
+
+The overlap function is a measure of the similarity between the particle configurations at time `0` and time `t`. It is defined as:
+`Q(t) = (1/N) * Σ_i θ(a - |r_i(t) - r_i(0)|)`,
+where `θ` is the Heaviside step function, `a` is a cutoff distance, and the average is taken over all particles `i` and time origins.
+A value of 1 means the configurations are identical (within the cutoff), and a value of 0 means they are completely different.
 
 # Arguments
-- `s`: The simulation.
-- `a=0.5`: The cutoff distance.
+- `s::Simulation`: The simulation data.
+- `a::Float64=0.5`: The cutoff distance for calculating the overlap. Typically this is a fraction of the particle diameter.
 
 # Returns
-- `Fs`: The overlap function.
-- `Fs_pp`: The overlap function per particle.
+- `Fs::Vector{Float64}`: A vector containing `Q(t)` for each time delay `Δt` in `s.dt_array`.
+- `Fs_pp::Matrix{Float64}`: A `(Ndt, N)` matrix containing the overlap function for each particle.
 """
 function find_overlap_function(s; a=0.5)
     N = s.N

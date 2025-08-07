@@ -1,8 +1,10 @@
 
 """
-    CB_microkernel(neigh1::Vector{Int}, neigh2::Vector{Int})
+    CB_microkernel(neigh1::Vector{Int}, neigh2::Vector{Int}) -> Float64
 
-Calculates the fraction of neighbors that are common between two neighbor lists.
+Calculates the fraction of neighbors in `neigh1` that are also present in `neigh2`.
+
+Returns 1000.0 if the initial neighbor list `neigh1` is empty.
 """
 function CB_microkernel(neigh1::Vector{Int}, neigh2::Vector{Int})
     N_neig1 = length(neigh1)
@@ -24,7 +26,7 @@ end
 """
     find_CB_per_particle(neighbourlists1, neighbourlists2, particle_i, dt_array, t1_t2_pair_array)
 
-Calculates the bond-breaking parameter `CB` for a single particle.
+Calculates the bond-breaking correlation function for a single particle, averaged over time origins.
 """
 function find_CB_per_particle(neighbourlists1, neighbourlists2, particle_i, dt_array, t1_t2_pair_array)
     Ndt = length(dt_array)
@@ -62,9 +64,20 @@ function find_CB_per_particle(neighbourlists1, neighbourlists2, particle_i, dt_a
 end
 
 """
-    find_CB(s, neighbourlists1, neighbourlists2)
+    find_CB(s::Simulation, neighbourlists1::Vector{<:Vector}, neighbourlists2::Vector{<:Vector})
 
-Calculates the bond-breaking parameter `CB` for all particles.
+Calculates the bond-breaking correlation function `C_B(t)` for all particles.
+
+This function measures the fraction of neighbors that a particle at time `t_0` still has at a later time `t_0 + t`.
+It is averaged over all particles and time origins `t_0`.
+
+# Arguments
+- `s::Simulation`: The simulation data, used for time information.
+- `neighbourlists1::Vector{<:Vector}`: A vector of neighbor lists at the initial times (`t_0`).
+- `neighbourlists2::Vector{<:Vector}`: A vector of neighbor lists at the final times (`t_0 + t`). Often, this is the same as `neighbourlists1`.
+
+# Returns
+- `CB::Matrix{Float64}`: A `(Ndt, N)` matrix where `CB[i, j]` is the bond-breaking correlation for particle `j` at time delay `dt_array[i]`.
 """
 function find_CB(s, neighbourlists1, neighbourlists2)
     dt_arr = s.dt_array

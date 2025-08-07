@@ -32,16 +32,20 @@
 """
     find_structure_factor(s::Simulation; kmin=7.0, kmax=7.4, kfactor=1)
 
-Calculates the structure factor for a simulation.
+Calculates the static structure factor `S(k)` for a simulation, averaged over a shell in k-space.
+
+This is a convenience function that first constructs the k-space and density modes, and then computes `S(k)`.
+The function is defined as: `S(k) = (1/N) * <|Σ_j exp(i * k ⋅ r_j)|^2>`.
+The average is taken over time and over k-vectors with magnitudes `k` such that `kmin < k < kmax`.
 
 # Arguments
-- `s::Simulation`: The simulation.
-- `kmin=7.0`: The minimum k value.
-- `kmax=7.4`: The maximum k value.
-- `kfactor=1`: The k-factor.
+- `s::Simulation`: The simulation data.
+- `kmin::Float64=7.0`: The minimum magnitude of the k-vectors to be included in the average.
+- `kmax::Float64=7.4`: The maximum magnitude of the k-vectors to be included in the average.
+- `kfactor::Int=1`: The resolution factor for the k-space grid.
 
 # Returns
-- `S`: The structure factor.
+- `Sk`: The structure factor. For a `SingleComponentSimulation`, this is a `Float64`. For a `MultiComponentSimulation`, this is a `Matrix{Float64}`.
 """
 function find_structure_factor(s::Simulation; kmin=7.0, kmax=7.4, kfactor=1)
     kspace = construct_k_space(s, (kmin, kmax); kfactor=kfactor, negative=true, rectangular=false)
@@ -53,17 +57,19 @@ end
 """
     find_structure_factor(s::Simulation, kspace::KSpace, ρkt::AbstractDensityModes, k_sample_array::AbstractVector; k_binwidth=0.1)
 
-Calculates the structure factor for a simulation for a given array of k-values.
+Calculates the static structure factor `S(k)` for a list of specified `k` values.
+
+For each `k` in `k_sample_array`, this function computes `S(k)` by averaging over a k-shell of width `k_binwidth` centered at `k`.
 
 # Arguments
-- `s::Simulation`: The simulation.
-- `kspace::KSpace`: The k-space.
-- `ρkt::AbstractDensityModes`: The density modes.
-- `k_sample_array::AbstractVector`: The array of k-values.
-- `k_binwidth=0.1`: The bin width for k.
+- `s::Simulation`: The simulation data.
+- `kspace::KSpace`: The pre-computed k-space.
+- `ρkt::AbstractDensityModes`: The pre-computed density modes.
+- `k_sample_array::AbstractVector`: A vector of k-magnitudes for which to compute `S(k)`.
+- `k_binwidth::Float64=0.1`: The width of the k-shell to average over for each value in `k_sample_array`.
 
 # Returns
-- `S_array`: An array of structure factors.
+- `S_array::Vector`: A vector where `S_array[i]` is the `S(k)` corresponding to `k_sample_array[i]`.
 """
 function find_structure_factor(s::Simulation, kspace::KSpace, ρkt::AbstractDensityModes, k_sample_array::AbstractVector; k_binwidth=0.1)
     S_array = []
@@ -78,17 +84,20 @@ end
 """
     find_structure_factor(s::SingleComponentSimulation, kspace::KSpace, ρkt::SingleComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
 
-Calculates the structure factor for a single-component simulation.
+Calculates the static structure factor `S(k)` for a single-component simulation.
+
+This is the main implementation that computes `S(k) = (1/N) * <|ρ(k)|^2>` from the pre-computed density modes `ρkt`.
+The average is performed over time and k-vectors within the magnitude range `[kmin, kmax]`.
 
 # Arguments
-- `s::SingleComponentSimulation`: The simulation.
-- `kspace::KSpace`: The k-space.
-- `ρkt::SingleComponentDensityModes`: The density modes.
-- `kmin=0.0`: The minimum k value.
-- `kmax=10.0^10.0`: The maximum k value.
+- `s::SingleComponentSimulation`: The simulation data.
+- `kspace::KSpace`: The pre-computed k-space.
+- `ρkt::SingleComponentDensityModes`: The pre-computed density modes.
+- `kmin::Float64=0.0`: The minimum magnitude of k-vectors to include in the average.
+- `kmax::Float64=10.0^10.0`: The maximum magnitude of k-vectors to include in the average.
 
 # Returns
-- `Sk`: The structure factor.
+- `Sk::Float64`: The value of the structure factor `S(k)`.
 """
 function find_structure_factor(s::SingleComponentSimulation, kspace::KSpace, ρkt::SingleComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
     Sk = real_static_correlation_function(ρkt.Re, ρkt.Im, ρkt.Re, ρkt.Im, kspace, kmin, kmax)
@@ -99,17 +108,20 @@ end
 """
     find_structure_factor(s::MultiComponentSimulation, kspace::KSpace, ρkt::MultiComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
 
-This function computes the static structure factor for a given simulation s using the density modes in ρkt and the k-space information in kspace. The structure factor is calculated separately for each species combination.
+Calculates the partial static structure factors `S_αβ(k)` for a multi-component simulation.
+
+This function computes `S_αβ(k) = (1/N) * <ρ_α(k) ρ_β*(-k)>` from the pre-computed density modes `ρkt` for species `α` and `β`.
+The average is performed over time and k-vectors within the magnitude range `[kmin, kmax]`.
 
 # Arguments
-- `s`: A `MultiComponentSimulation` object representing the simulation data.
-- `kspace`: A `KSpace` object containing information about the k-space grid.
-- `ρkt`: A `MultiComponentDensityModes` object representing the Fourier transform of the density fields for each species.
-- `kmin`: The minimum k value to include in the calculation. Default value is 0.0.
-- `kmax`: The maximum k value to include in the calculation. Default value is 10^10.
+- `s::MultiComponentSimulation`: The simulation data.
+- `kspace::KSpace`: The pre-computed k-space.
+- `ρkt::MultiComponentDensityModes`: The pre-computed density modes for all species.
+- `kmin::Float64=0.0`: The minimum magnitude of k-vectors to include in the average.
+- `kmax::Float64=10.0^10.0`: The maximum magnitude of k-vectors to include in the average.
 
 # Returns
-- `Sk`: A square matrix of size `N_species` x `N_species` representing the static structure factor. `Sk[i, j]` represents the structure factor for species i and j.
+- `Sk::Matrix{Float64}`: A matrix where `Sk[α, β]` is the partial structure factor `S_αβ(k)`.
 """
 function find_structure_factor(s::MultiComponentSimulation, kspace::KSpace, ρkt::MultiComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
     N_species = s.N_species

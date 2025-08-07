@@ -1,16 +1,21 @@
 
 """
-    find_relative_distance_neighborlists(s, rc; ζ = 0.2)
+    find_relative_distance_neighborlists(s::SingleComponentSimulation, rc::Float64; ζ::Float64 = 0.2)
 
-Finds the neighbor lists for a simulation based on the relative distance between particles.
+Finds neighbor lists for all time steps based on a relative distance criterion.
+
+This method is suitable for polydisperse systems where particle diameters vary. Two particles `i` and `j` are considered neighbors if the distance between them is less than a cutoff that depends on their respective diameters `D_i` and `D_j`:
+`distance(i, j) < rc * (D_i + D_j)/2 * (1 - ζ * abs(D_i - D_j))`
+
+This function requires the `D_array` (particle diameters) to be loaded in the `Simulation` object.
 
 # Arguments
-- `s`: The simulation.
-- `rc`: The cutoff distance.
-- `ζ=0.2`: The polydispersity parameter.
+- `s::SingleComponentSimulation`: The simulation data. Must contain particle diameters.
+- `rc::Float64`: The relative cutoff distance.
+- `ζ::Float64=0.2`: A parameter to modulate the cutoff for particles of different sizes.
 
 # Returns
-- `neighbourlists`: The neighbor lists.
+- `neighborlists::Vector{Vector{Vector{Int}}}`: A vector over time steps. For each time step, a vector over particles, where `neighborlists[t][i]` contains the list of neighbors of particle `i`.
 """
 function find_relative_distance_neighborlists(s, rc; ζ = 0.2)
     r_array = s.r_array
@@ -62,16 +67,19 @@ end
 
 
 """
-    find_absolute_distance_neighborlists(s, rc)
+    find_absolute_distance_neighborlists(s::Simulation, rc::Float64)
 
-Finds the neighbor lists for a simulation based on the absolute distance between particles.
+Finds neighbor lists for all time steps based on a fixed, absolute distance cutoff.
+
+Two particles `i` and `j` are considered neighbors if the distance between them is less than `rc`.
+Periodic boundary conditions are taken into account.
 
 # Arguments
-- `s`: The simulation.
-- `rc`: The cutoff distance.
+- `s::Simulation`: The simulation data.
+- `rc::Float64`: The absolute cutoff distance.
 
 # Returns
-- `neighbourlists`: The neighbor lists.
+- `neighborlists::Vector{Vector{Vector{Int}}}`: A vector over time steps. For each time step, a vector over particles, where `neighborlists[t][i]` contains the list of neighbors of particle `i`.
 """
 function find_absolute_distance_neighborlists(s, rc)
     r_array = s.r_array
@@ -204,18 +212,21 @@ end
 
 
 """
-    find_voronoi_neighborlists(s; max_distance_from_boundary=3.0, verbose=true, indices=eachindex(s.t_array))
+    find_voronoi_neighborlists(s::Simulation; max_distance_from_boundary=3.0, verbose=true, indices=eachindex(s.t_array))
 
-Computes the Voronoi neighborlists for a simulation.
+Computes neighbor lists based on Voronoi tessellation for each time step.
+
+Two particles are considered neighbors if their Voronoi cells are adjacent (i.e., share a facet).
+This method uses the `Quickhull.jl` package to perform the Delaunay triangulation, which is the dual of the Voronoi tessellation.
 
 # Arguments
-- `s`: The simulation.
-- `max_distance_from_boundary=3.0`: The maximum distance from the boundary to take periodic images into account.
-- `verbose=true`: Whether to print verbose output.
-- `indices=eachindex(s.t_array)`: The indices of the time steps to consider.
+- `s::Simulation`: The simulation data.
+- `max_distance_from_boundary::Float64=3.0`: How far from the central box to consider periodic images for the tessellation. This should be large enough to avoid boundary effects.
+- `verbose::Bool=true`: If `true`, prints progress information.
+- `indices=eachindex(s.t_array)`: The range of time step indices to analyze. Defaults to all time steps.
 
 # Returns
-- `neighbourlists`: The Voronoi neighborlists.
+- `neighborlists::Vector{Vector{Vector{Int}}}`: A vector over time steps. For each time step, a vector over particles, where `neighborlists[t][i]` contains the list of neighbors of particle `i`.
 """
 function find_voronoi_neighborlists(s; max_distance_from_boundary=3.0, verbose=true, indices=eachindex(s.t_array))
     dims = size(s.r_array, 1)
