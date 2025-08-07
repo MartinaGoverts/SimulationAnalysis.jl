@@ -1,3 +1,8 @@
+"""
+    gr3_kernel!(g_r_acc, r1, r2, task, Ntasks, N_timesteps, N1, N2, xbox_size, ybox_size, zbox_size, binsize, Nbins)
+
+Kernel for the 3D radial distribution function.
+"""
 function gr3_kernel!(g_r_acc, r1, r2, task, Ntasks, N_timesteps, N1, N2, xbox_size, ybox_size, zbox_size, binsize, Nbins)
 	for t = task:Ntasks:N_timesteps
 		if task == 1
@@ -20,6 +25,11 @@ function gr3_kernel!(g_r_acc, r1, r2, task, Ntasks, N_timesteps, N1, N2, xbox_si
 	end
 end
 
+"""
+    gr2_kernel!(g_r_acc, r1, r2, task, Ntasks, N_timesteps, N1, N2, xbox_size, ybox_size, binsize, Nbins)
+
+Kernel for the 2D radial distribution function.
+"""
 function gr2_kernel!(g_r_acc, r1, r2, task, Ntasks, N_timesteps, N1, N2, xbox_size, ybox_size, binsize, Nbins)
 	for t = task:Ntasks:N_timesteps
 		for particle1 = 1:N1
@@ -37,6 +47,11 @@ function gr2_kernel!(g_r_acc, r1, r2, task, Ntasks, N_timesteps, N1, N2, xbox_si
 	end
 end
 
+"""
+    find_radial_distribution_function3D(r1, r2, Nbins, box_sizes, bin_edges, Ntasks)
+
+Calculates the 3D radial distribution function.
+"""
 function find_radial_distribution_function3D(r1, r2, Nbins, box_sizes, bin_edges, Ntasks)
     println("Calculating g(r), with $Ntasks tasks distributed over $(Threads.nthreads()) threads")
     @assert length(box_sizes) == 3
@@ -66,6 +81,11 @@ function find_radial_distribution_function3D(r1, r2, Nbins, box_sizes, bin_edges
     return reshape(g_r, length(g_r))
 end
 
+"""
+    find_radial_distribution_function2D(r1, r2, Nbins, box_sizes, bin_edges, Ntasks)
+
+Calculates the 2D radial distribution function.
+"""
 function find_radial_distribution_function2D(r1, r2, Nbins, box_sizes, bin_edges, Ntasks)
     println("Calculating g(r), with $Ntasks tasks distributed over $(Ntasks) threads")
     @assert length(box_sizes) == 2
@@ -95,6 +115,11 @@ function find_radial_distribution_function2D(r1, r2, Nbins, box_sizes, bin_edges
 end
 
 
+"""
+    find_radial_distribution_function2D2(r1, r2, Nbins, box_sizes, bin_edges)
+
+Calculates the 2D radial distribution function.
+"""
 function find_radial_distribution_function2D2(r1, r2, Nbins, box_sizes, bin_edges)
     println("Calculating g(r)")
     @assert length(box_sizes) == 2
@@ -133,6 +158,11 @@ function find_radial_distribution_function2D2(r1, r2, Nbins, box_sizes, bin_edge
     return reshape(g_r, length(g_r))
 end
 
+"""
+    find_radial_distribution_function(s::MultiComponentSimulation, Nbins, rmax)
+
+Calculates the radial distribution function for a multi-component simulation.
+"""
 function find_radial_distribution_function(s::MultiComponentSimulation, Nbins, rmax)
     if rmax < 0.0
         rmax = minimum(s.box_sizes)/2
@@ -150,6 +180,11 @@ function find_radial_distribution_function(s::MultiComponentSimulation, Nbins, r
 
 end
 
+"""
+    find_radial_distribution_function(s::SingleComponentSimulation, Nbins::Int, rmax; Ntasks=1)
+
+Calculates the radial distribution function for a single-component simulation.
+"""
 function find_radial_distribution_function(s::SingleComponentSimulation, Nbins::Int, rmax; Ntasks=1)
     if rmax < 0.0
         rmax = minimum(box_sizes)/2
@@ -166,6 +201,11 @@ function find_radial_distribution_function(s::SingleComponentSimulation, Nbins::
     end
 end
 
+"""
+    find_radial_distribution_function(s::SingleComponentSimulation, dr::Float64, rmax; Ntasks=1)
+
+Calculates the radial distribution function for a single-component simulation.
+"""
 function find_radial_distribution_function(s::SingleComponentSimulation, dr::Float64, rmax; Ntasks=1)
     if rmax < 0.0
         rmax = minimum(box_sizes)/2

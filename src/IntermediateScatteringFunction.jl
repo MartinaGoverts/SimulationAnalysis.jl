@@ -1,3 +1,17 @@
+"""
+    find_intermediate_scattering_function(s::Simulation; kmin=7.0, kmax=7.4, kfactor=1)
+
+Calculates the intermediate scattering function for a simulation.
+
+# Arguments
+- `s::Simulation`: The simulation.
+- `kmin=7.0`: The minimum k value.
+- `kmax=7.4`: The maximum k value.
+- `kfactor=1`: The k-factor.
+
+# Returns
+- `F`: The intermediate scattering function.
+"""
 function find_intermediate_scattering_function(s::Simulation; kmin=7.0, kmax=7.4, kfactor=1)
     kspace = construct_k_space(s, (kmin, kmax); kfactor=kfactor, negative=true, rectangular=false)
     ρkt = find_density_modes(s, kspace; verbose=false)
@@ -5,6 +19,21 @@ function find_intermediate_scattering_function(s::Simulation; kmin=7.0, kmax=7.4
     return F
 end
 
+"""
+    find_intermediate_scattering_function(s::Simulation, kspace::KSpace, ρkt, k_sample_array::AbstractVector; k_binwidth=0.1)
+
+Calculates the intermediate scattering function for a simulation for a given array of k-values.
+
+# Arguments
+- `s::Simulation`: The simulation.
+- `kspace::KSpace`: The k-space.
+- `ρkt`: The density modes.
+- `k_sample_array::AbstractVector`: The array of k-values.
+- `k_binwidth=0.1`: The bin width for k.
+
+# Returns
+- `F_array`: An array of intermediate scattering functions.
+"""
 function find_intermediate_scattering_function(s::Simulation, kspace::KSpace, ρkt, k_sample_array::AbstractVector; k_binwidth=0.1)
     F_array = []
     for (ik, k) in enumerate(k_sample_array)
@@ -15,6 +44,21 @@ function find_intermediate_scattering_function(s::Simulation, kspace::KSpace, ρ
     return F_array
 end
 
+"""
+    find_intermediate_scattering_function(s::SingleComponentSimulation, kspace::KSpace, ρkt::SingleComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
+
+Calculates the intermediate scattering function for a single-component simulation.
+
+# Arguments
+- `s::SingleComponentSimulation`: The simulation.
+- `kspace::KSpace`: The k-space.
+- `ρkt::SingleComponentDensityModes`: The density modes.
+- `kmin=0.0`: The minimum k value.
+- `kmax=10.0^10.0`: The maximum k value.
+
+# Returns
+- `Fk`: The intermediate scattering function.
+"""
 function find_intermediate_scattering_function(s::SingleComponentSimulation, kspace::KSpace, ρkt::SingleComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
     Ndt = length(s.dt_array)
     Fk = zeros(Ndt)
@@ -22,6 +66,21 @@ function find_intermediate_scattering_function(s::SingleComponentSimulation, ksp
     return Fk ./ s.N
 end
 
+"""
+    find_intermediate_scattering_function(s::MultiComponentSimulation, kspace::KSpace, ρkt::MultiComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
+
+Calculates the intermediate scattering function for a multi-component simulation.
+
+# Arguments
+- `s::MultiComponentSimulation`: The simulation.
+- `kspace::KSpace`: The k-space.
+- `ρkt::MultiComponentDensityModes`: The density modes.
+- `kmin=0.0`: The minimum k value.
+- `kmax=10.0^10.0`: The maximum k value.
+
+# Returns
+- `Fk`: The intermediate scattering function.
+"""
 function find_intermediate_scattering_function(s::MultiComponentSimulation, kspace::KSpace, ρkt::MultiComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
     N_species = s.N_species
     Ndt = length(s.dt_array)
@@ -35,12 +94,40 @@ function find_intermediate_scattering_function(s::MultiComponentSimulation, kspa
     return Fk ./ s.N
 end
 
+"""
+    find_self_intermediate_scattering_function(s::Simulation; kmin=7.0, kmax=7.4, kfactor=1)
+
+Calculates the self-intermediate scattering function for a simulation.
+
+# Arguments
+- `s::Simulation`: The simulation.
+- `kmin=7.0`: The minimum k value.
+- `kmax=7.4`: The maximum k value.
+- `kfactor=1`: The k-factor.
+
+# Returns
+- `F`: The self-intermediate scattering function.
+"""
 function find_self_intermediate_scattering_function(s::Simulation; kmin=7.0, kmax=7.4, kfactor=1)
     kspace = construct_k_space(s, (kmin, kmax); kfactor=kfactor, negative=true, rectangular=false)
     F = find_self_intermediate_scattering_function(s, kspace; kmin=kmin, kmax=kmax)
     return F
 end
 
+"""
+    find_self_intermediate_scattering_function(s::Simulation, kspace::KSpace, k_sample_array::AbstractVector; k_binwidth=0.1)
+
+Calculates the self-intermediate scattering function for a simulation for a given array of k-values.
+
+# Arguments
+- `s::Simulation`: The simulation.
+- `kspace::KSpace`: The k-space.
+- `k_sample_array::AbstractVector`: The array of k-values.
+- `k_binwidth=0.1`: The bin width for k.
+
+# Returns
+- `F_array`: An array of self-intermediate scattering functions.
+"""
 function find_self_intermediate_scattering_function(s::Simulation, kspace::KSpace, k_sample_array::AbstractVector; k_binwidth=0.1)
     F_array = []
     for (ik, k) in enumerate(k_sample_array)
@@ -51,6 +138,21 @@ function find_self_intermediate_scattering_function(s::Simulation, kspace::KSpac
     return F_array
 end
 
+"""
+    find_self_intermediate_scattering_function(s::SingleComponentSimulation, kspace::KSpace; kmin=0.0, kmax=10.0^10.0)
+
+Calculates the self-intermediate scattering function for a single-component simulation.
+
+# Arguments
+- `s::SingleComponentSimulation`: The simulation.
+- `kspace::KSpace`: The k-space.
+- `kmin=0.0`: The minimum k value.
+- `kmax=10.0^10.0`: The maximum k value.
+
+# Returns
+- `Fk`: The self-intermediate scattering function.
+- `Fks_per_particle`: The self-intermediate scattering function per particle.
+"""
 function find_self_intermediate_scattering_function(s::SingleComponentSimulation, kspace::KSpace; kmin=0.0, kmax=10.0^10.0)
     kmask = (kmin .< kspace.k_lengths .< kmax)
     k_lengths = kspace.k_lengths[kmask]

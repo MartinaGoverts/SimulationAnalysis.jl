@@ -1,10 +1,17 @@
 
 """
-    find_diagonal_four_point_k_vector_set(kspace::KSpace3D, k1_bounds, k2_bounds, cosθ_bounds)    
+    find_diagonal_four_point_k_vector_set(kspace, k1_bounds, k2_bounds, cosθ_bounds)
 
-    Finds the set of k vectors that satisfy the conditions given for k1, k2 and cosθ12.
-    These are specified in 2-Tuples.
+Finds the set of k vectors that satisfy the conditions given for k1, k2 and cosθ12.
 
+# Arguments
+- `kspace`: The k-space.
+- `k1_bounds`: The bounds for the length of the first k-vector.
+- `k2_bounds`: The bounds for the length of the second k-vector.
+- `cosθ_bounds`: The bounds for the cosine of the angle between the two k-vectors.
+
+# Returns
+- `kvecset`: A set of pairs of k-vector indices.
 """
 function find_diagonal_four_point_k_vector_set(kspace, k1_bounds, k2_bounds, cosθ_bounds)
     #Initialize set
@@ -60,6 +67,22 @@ function find_diagonal_four_point_k_vector_set(kspace, k1_bounds, k2_bounds, cos
 end
 
 
+"""
+    find_F4_diagonal(s::Simulation, kspace, k1_bounds, k2_bounds, cosθ_bounds)
+
+Calculates the diagonal part of the four-point dynamic susceptibility.
+
+# Arguments
+- `s::Simulation`: The simulation.
+- `kspace`: The k-space.
+- `k1_bounds`: The bounds for the length of the first k-vector.
+- `k2_bounds`: The bounds for the length of the second k-vector.
+- `cosθ_bounds`: The bounds for the cosine of the angle between the two k-vectors.
+
+# Returns
+- `F4_arr`: The diagonal part of the four-point dynamic susceptibility.
+- `F2F2_arr`: The product of the two-point dynamic susceptibilities.
+"""
 function find_F4_diagonal(s::Simulation, kspace, k1_bounds, k2_bounds, cosθ_bounds)
     dt_array = s.dt_array
     t1_t2_pair_array = s.t1_t2_pair_array
@@ -79,6 +102,20 @@ function find_F4_diagonal(s::Simulation, kspace, k1_bounds, k2_bounds, cosθ_bou
     return F4_arr, F2F2_arr
 end
 
+"""
+    find_F4_diagonal(kspace, kvecset, pairs_idt)
+
+Calculates the diagonal part of the four-point dynamic susceptibility for a given set of k-vectors and time pairs.
+
+# Arguments
+- `kspace`: The k-space.
+- `kvecset`: The set of pairs of k-vector indices.
+- `pairs_idt`: The pairs of time indices.
+
+# Returns
+- `F4`: The diagonal part of the four-point dynamic susceptibility.
+- `F2F2`: The product of the two-point dynamic susceptibilities.
+"""
 function find_F4_diagonal(kspace, kvecset, pairs_idt)
     Reρkt = kspace.Reρkt
     Imρkt = kspace.Imρkt
@@ -98,6 +135,23 @@ function find_F4_diagonal(kspace, kvecset, pairs_idt)
     return F4, F2F2
 end
 
+"""
+    _find_F4_diagonal(Reρkt, Imρkt, kvecset, N, it1, it2)
+
+Calculates the diagonal part of the four-point dynamic susceptibility for a given set of k-vectors and a single time pair.
+
+# Arguments
+- `Reρkt`: The real part of the density modes.
+- `Imρkt`: The imaginary part of the density modes.
+- `kvecset`: The set of pairs of k-vector indices.
+- `N`: The number of particles.
+- `it1`: The index of the first time.
+- `it2`: The index of the second time.
+
+# Returns
+- `F4`: The diagonal part of the four-point dynamic susceptibility.
+- `F2F2`: The product of the two-point dynamic susceptibilities.
+"""
 function _find_F4_diagonal(Reρkt, Imρkt, kvecset, N, it1, it2)
     F4 = 0.0
     F2k1 = 0.0
@@ -118,6 +172,11 @@ function _find_F4_diagonal(Reρkt, Imρkt, kvecset, N, it1, it2)
     return F4, F2k1*F2k2
 end
 
+"""
+    _F4_kernel(Reρkt, Imρkt, ik1, ik2, it1, it2)
+
+Kernel for the calculation of the diagonal part of the four-point dynamic susceptibility.
+"""
 Base.Base.@propagate_inbounds function _F4_kernel(Reρkt, Imρkt, ik1, ik2, it1, it2)
     Reρk1_0 = Reρkt[it1, ik1]
     Imρk1_0 = Imρkt[it1, ik1]
@@ -140,6 +199,24 @@ Base.Base.@propagate_inbounds function _F4_kernel(Reρkt, Imρkt, ik1, ik2, it1,
 end
 
 
+"""
+    find_F4_diagonal_all_k(s, kspace, idt, Nksample, Ncostheta)
+
+Calculates the diagonal part of the four-point dynamic susceptibility for all k-vectors.
+
+# Arguments
+- `s`: The simulation.
+- `kspace`: The k-space.
+- `idt`: The index of the time difference.
+- `Nksample`: The number of k-samples.
+- `Ncostheta`: The number of cos(theta) samples.
+
+# Returns
+- `k_sample_array`: The array of k-samples.
+- `costheta_sample_array`: The array of cos(theta) samples.
+- `F4_arr`: The diagonal part of the four-point dynamic susceptibility.
+- `F2F2_arr`: The product of the two-point dynamic susceptibilities.
+"""
 function find_F4_diagonal_all_k(s, kspace, idt, Nksample, Ncostheta)
     k_lengths = kspace.k_lengths
     k_array = kspace.k_array
@@ -238,6 +315,22 @@ function find_F4_diagonal_all_k(s, kspace, idt, Nksample, Ncostheta)
 end
 
 
+"""
+    find_F4_super_diagonal(s, kspace; dk=0.1, kmax=0.0)
+
+Calculates the super-diagonal part of the four-point dynamic susceptibility.
+
+# Arguments
+- `s`: The simulation.
+- `kspace`: The k-space.
+- `dk=0.1`: The bin size for k.
+- `kmax=0.0`: The maximum k.
+
+# Returns
+- `k_sample_array`: The array of k-samples.
+- `F4_binned`: The binned super-diagonal part of the four-point dynamic susceptibility.
+- `F2_binned_sq`: The square of the binned two-point dynamic susceptibility.
+"""
 function find_F4_super_diagonal(s, kspace; dk=0.1, kmax=0.0)
     Nk = kspace.Nk
     k_lengths = kspace.k_lengths
@@ -294,6 +387,23 @@ function find_F4_super_diagonal(s, kspace; dk=0.1, kmax=0.0)
     return k_sample_array, F4_binned, F2_binned.^2
 end
 
+"""
+    bin_F4_and_F2(F4, F2, kspace; dk=0.1, kmax=0.0)
+
+Bins the four-point and two-point dynamic susceptibilities.
+
+# Arguments
+- `F4`: The four-point dynamic susceptibility.
+- `F2`: The two-point dynamic susceptibility.
+- `kspace`: The k-space.
+- `dk=0.1`: The bin size for k.
+- `kmax=0.0`: The maximum k.
+
+# Returns
+- `k_sample_array`: The array of k-samples.
+- `F4_binned`: The binned four-point dynamic susceptibility.
+- `F2_binned`: The binned two-point dynamic susceptibility.
+"""
 function bin_F4_and_F2(F4, F2, kspace; dk=0.1, kmax=0.0)
     Ndt = size(F2, 2)
     Nk = kspace.Nk

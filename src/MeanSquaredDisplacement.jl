@@ -1,18 +1,40 @@
+"""
+    find_mean_squared_displacement(simulation::Simulation; per_particle=false)
+
+Calculates the mean squared displacement for a simulation.
+
+# Arguments
+- `simulation::Simulation`: The simulation.
+- `per_particle=false`: Whether to return the mean squared displacement per particle.
+
+# Returns
+- `msd`: The mean squared displacement.
+- `msd_per_particle`: The mean squared displacement per particle (if `per_particle` is true).
+"""
 function find_mean_squared_displacement(simulation::Simulation; per_particle=false)
-        msd, msd_per_particle = find_mean_squared_displacement(simulation.r_array, simulation.dt_array, simulation.t1_t2_pair_array)
-        if per_particle
-            return msd, msd_per_particle
-        else
-            return msd
-        end
+    msd, msd_per_particle = find_mean_squared_displacement(simulation.r_array, simulation.dt_array, simulation.t1_t2_pair_array)
+    if per_particle
+        return msd, msd_per_particle
+    else
+        return msd
+    end
 end
 
 
 """
-Calculates the mean squared displacement from the t1, t2 pairs. 
-Returns:
-    An array contaning the mean squared displacement
-    An array contaning the mean squared displacement per particle
+    find_mean_squared_displacement(r, dt_array, t1_t2_pair_array; verbose=true)
+
+Calculates the mean squared displacement from the t1, t2 pairs.
+
+# Arguments
+- `r`: The positions of the particles.
+- `dt_array`: The array of time differences.
+- `t1_t2_pair_array`: The array of pairs of times.
+- `verbose=true`: Whether to print verbose output.
+
+# Returns
+- `msd`: The mean squared displacement.
+- `msd_per_particle`: The mean squared displacement per particle.
 """
 function find_mean_squared_displacement(r, dt_array, t1_t2_pair_array; verbose=true)
     dims , N, _ = size(r)  

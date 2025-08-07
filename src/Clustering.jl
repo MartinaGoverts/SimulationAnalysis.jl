@@ -1,5 +1,10 @@
 
 
+"""
+    find_cluster!(cluster, particle_i, neighbourlists, mobile_particles)
+
+Recursively finds all particles in a cluster.
+"""
 function find_cluster!(cluster, particle_i, neighbourlists, mobile_particles)
 
     for neighbour in neighbourlists[particle_i]

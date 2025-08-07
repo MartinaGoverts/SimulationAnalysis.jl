@@ -1,4 +1,17 @@
 
+"""
+    find_relative_distance_neighborlists(s, rc; ζ = 0.2)
+
+Finds the neighbor lists for a simulation based on the relative distance between particles.
+
+# Arguments
+- `s`: The simulation.
+- `rc`: The cutoff distance.
+- `ζ=0.2`: The polydispersity parameter.
+
+# Returns
+- `neighbourlists`: The neighbor lists.
+"""
 function find_relative_distance_neighborlists(s, rc; ζ = 0.2)
     r_array = s.r_array
     D_array = s.D_array
@@ -48,6 +61,18 @@ function find_relative_distance_neighborlists(s, rc; ζ = 0.2)
 end
 
 
+"""
+    find_absolute_distance_neighborlists(s, rc)
+
+Finds the neighbor lists for a simulation based on the absolute distance between particles.
+
+# Arguments
+- `s`: The simulation.
+- `rc`: The cutoff distance.
+
+# Returns
+- `neighbourlists`: The neighbor lists.
+"""
 function find_absolute_distance_neighborlists(s, rc)
     r_array = s.r_array
     D_array = s.D_array
@@ -92,6 +117,11 @@ end
 
 
 
+"""
+    fill_r_array_with_images!(r_array_with_images, is_image_of, r_array, it, box_size, max_distance_from_boundary)
+
+Fills an array with the positions of the particles and their periodic images.
+"""
 function fill_r_array_with_images!(r_array_with_images, is_image_of, r_array, it, box_size, max_distance_from_boundary)
     Ndims, N, Nt = size(r_array)
     @assert it <= Nt
@@ -144,6 +174,11 @@ function fill_r_array_with_images!(r_array_with_images, is_image_of, r_array, it
 end
 
 
+"""
+    new_delaunay_facets(dhull)
+
+Finds the new facets of a Delaunay triangulation.
+"""
 function new_delaunay_facets(dhull)
     hull = dhull.hull
     maxlift = maximum(last, hull.pts)
@@ -156,6 +191,11 @@ function new_delaunay_facets(dhull)
     end
 end
 
+"""
+    new_facets(dhull)
+
+Finds the new facets of a Delaunay triangulation.
+"""
 function new_facets(dhull)
     return Quickhull.mappedarray(f -> Quickhull.NgonFace(f.plane.point_indices), new_delaunay_facets(dhull))
 end
@@ -164,17 +204,18 @@ end
 
 
 """
-    find_neighborlists_voronoi(s::Simulation; max_distance_from_boundary=3.0) where Ndims
+    find_voronoi_neighborlists(s; max_distance_from_boundary=3.0, verbose=true, indices=eachindex(s.t_array))
 
 Computes the Voronoi neighborlists for a simulation.
 
 # Arguments
-- `s::Simulation`: The simulation.
-- `max_distance_from_boundary::Float64`: The maximum distance from the boundary to take periodic images into account.
+- `s`: The simulation.
+- `max_distance_from_boundary=3.0`: The maximum distance from the boundary to take periodic images into account.
+- `verbose=true`: Whether to print verbose output.
+- `indices=eachindex(s.t_array)`: The indices of the time steps to consider.
 
 # Returns
-- `neighbourlists::Vector{Vector{Vector{Int}}}`: The Voronoi neighborlists.
-
+- `neighbourlists`: The Voronoi neighborlists.
 """
 function find_voronoi_neighborlists(s; max_distance_from_boundary=3.0, verbose=true, indices=eachindex(s.t_array))
     dims = size(s.r_array, 1)

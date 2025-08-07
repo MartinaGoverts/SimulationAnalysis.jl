@@ -7,9 +7,9 @@ makedocs(
     modules = [SimulationAnalysis],
     pages = [
         "Home" => "index.md",
-        "API" => "api.md",
         "Tutorial" => "tutorial.md",
-        "Examples" => "examples.md"
+        "Examples" => "examples.md",
+        "API" => "api.md",
     ],
     doctest = false
 )

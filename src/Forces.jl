@@ -1,10 +1,31 @@
 abstract type InteractionPotential end
 
+"""
+    Weysser <: InteractionPotential
+
+A struct for the Weysser interaction potential.
+
+# Fields
+- `ϵ::Float64`: The interaction strength.
+- `δ::Float64`: The interaction range.
+"""
 struct Weysser <: InteractionPotential
     ϵ::Float64
     δ::Float64
 end
 
+"""
+    Berthier <: InteractionPotential
+
+A struct for the Berthier interaction potential.
+
+# Fields
+- `c0::Float64`: The c0 coefficient.
+- `c2::Float64`: The c2 coefficient.
+- `c4::Float64`: The c4 coefficient.
+- `ζ::Float64`: The zeta coefficient.
+- `σ_ratio::Float64`: The ratio of the diameters.
+"""
 struct Berthier <: InteractionPotential 
     c0::Float64
     c2::Float64
@@ -13,11 +34,33 @@ struct Berthier <: InteractionPotential
     σ_ratio::Float64
 end
 
+"""
+    WCA <: InteractionPotential
+
+A struct for the WCA interaction potential.
+
+# Fields
+- `ϵ::Float64`: The interaction strength.
+- `σ::Float64`: The interaction range.
+"""
 struct WCA <: InteractionPotential
     ϵ::Float64
     σ::Float64
 end
 
+"""
+    KAWCA <: InteractionPotential
+
+A struct for the Kob-Andersen WCA interaction potential.
+
+# Fields
+- `ϵ11::Float64`: The interaction strength between particles of type 1.
+- `ϵ12::Float64`: The interaction strength between particles of type 1 and 2.
+- `ϵ22::Float64`: The interaction strength between particles of type 2.
+- `σ11::Float64`: The interaction range between particles of type 1.
+- `σ12::Float64`: The interaction range between particles of type 1 and 2.
+- `σ22::Float64`: The interaction range between particles of type 2.
+"""
 struct KAWCA <: InteractionPotential
     ϵ11::Float64
     ϵ12::Float64
@@ -28,14 +71,29 @@ struct KAWCA <: InteractionPotential
 end
 
 
+"""
+    find_mean_D(Di, Dj, U::Weysser)
+
+Find the mean diameter for the Weysser potential.
+"""
 @inline function find_mean_D(Di, Dj, U::Weysser)
     return (Di + Dj)*0.5 
 end
 
+"""
+    find_mean_D(Di, Dj, U::WCA)
+
+Find the mean diameter for the WCA potential.
+"""
 @inline function find_mean_D(Di, Dj, U::WCA)
     return U.σ 
 end
 
+"""
+    find_mean_D(Di, Dj, U::Berthier)
+
+Find the mean diameter for the Berthier potential.
+"""
 @inline function find_mean_D(Di, Dj, U::Berthier)
     return (Di + Dj)*0.5 * (1.0 - U.ζ * abs(Di - Dj)) 
 end
@@ -43,11 +101,15 @@ end
 
 
 
+"""
+    force(r_squared, mean_d_squared, U::WCA)
+
+Calculates the force for the WCA potential.
+
+-∇U = (48ϵ xi^12 + 24 xi^6) r^-2 vec(r), where we defined xi = dij/rij
+this function returns the force without the multiplication with vec(r)
+"""
 @inline function force(r_squared, mean_d_squared, U::WCA)
-    """
-    -∇U = (48ϵ xi^12 + 24 xi^6) r^-2 vec(r), where we defined xi = dij/rij
-    this function returns the force without the multiplication with vec(r)
-    """
     inv_r_squared = 1.0/r_squared
     xi2 = mean_d_squared*inv_r_squared
     xi4 = xi2*xi2
@@ -56,11 +118,15 @@ end
     return U.ϵ*(48*xi12 - 24*xi6) * inv_r_squared
 end
 
+"""
+    force(r_squared, mean_d_squared, U::Weysser)
+
+Calculates the force for the Weysser potential.
+
+-∇U = 36ϵ (xi)^36 r^-2 vec(r), where we defined xi = dij/rij
+this function returns the force without the multiplication with vec(r)
+"""
 @inline function force(r_squared, mean_d_squared, U::Weysser)
-    """
-    -∇U = 36ϵ (xi)^36 r^-2 vec(r), where we defined xi = dij/rij
-    this function returns the force without the multiplication with vec(r)
-    """
     inv_r_squared = 1.0/r_squared
     xi2 = mean_d_squared*inv_r_squared
     xi4 = xi2*xi2
@@ -70,10 +136,14 @@ end
     return 36*U.ϵ*xi36*inv_r_squared
 end
 
+"""
+    force(r_squared, mean_d_squared, U::Berthier)
+
+Calculates the force for the Berthier potential.
+
+Soft repulsive pair potential force (before multiplication with pair vector)
+"""
 @inline function force(r_squared, mean_d_squared, U::Berthier)
-    """
-    Soft repulsive pair potential force (before multiplication with pair vector)
-    """
     inv_mean_d2 = 1.0 / mean_d_squared
     invxi2 = r_squared*inv_mean_d2
     invxi4 = invxi2*invxi2
@@ -81,11 +151,13 @@ end
     return -2.0 * inv_mean_d2 * (U.c2 + 2.0*U.c4*invxi2 - 6.0*xi14)
 end
 
+"""
+    calculate_forces!(s, U; friction=false, cutoff=1.25)
+
+Recalculates the total force on all particles according to the langevin equation F = -∇U - γv. This function also updates the
+total potential energy in the output datastructure.
+"""
 function calculate_forces!(s, U; friction=false, cutoff=1.25)
-    """
-    Recalculates the total force on all particles according to the langevin equation F = -∇U - γv. This function also updates the
-    total potential energy in the output datastructure.
-    """
     r_array = s.r_array
     F_array = s.F_array
     F_array .= 0
@@ -149,12 +221,15 @@ function calculate_forces!(s, U; friction=false, cutoff=1.25)
     end
 end
 
+"""
+    force(r_squared, ϵ, σ, ::KAWCA)
+
+Calculates the force for the KAWCA potential.
+
+-∇U = (48ϵ xi^12 + 24 xi^6) r^-2 vec(r), where we defined xi = dij/rij
+this function returns the force without the multiplication with vec(r)
+"""
 @inline function force(r_squared, ϵ, σ, ::KAWCA)
-    """
-    -∇U = (48ϵ xi^12 + 24 xi^6) r^-2 vec(r), where we defined xi = dij/rij
-    this function returns the force without the multiplication with vec(r)
-    """
-    
     inv_r_squared = 1/ r_squared
     xi2 = σ*σ*inv_r_squared
     xi4 = xi2*xi2
@@ -164,6 +239,11 @@ end
 end
 
 
+"""
+    get_epsilon_sigma(type1, type2, U::KAWCA)
+
+Get the epsilon and sigma for the KAWCA potential.
+"""
 @inline function get_epsilon_sigma(type1, type2, U::KAWCA)
     if type1 == type2
         ϵ = ifelse(type1 == 1, U.ϵ11, U.ϵ22)
@@ -178,13 +258,12 @@ end
 """
     calculate_forces!(s, U::KAWCA; cutoff=2.0^(1.0/6.0))
 
-Recalculates the total force on all particles in a multi-component simulation 's' according to the Kob-Andersen Weeks-Chandler-Andersen system U, 
-and updates the force array in 's' with the calculated values. 
+Recalculates the total force on all particles in a multi-component simulation `s` according to the Kob-Andersen Weeks-Chandler-Andersen system U, and updates the force array in `s` with the calculated values.
 
 # Arguments
-- `s`: a MultiComponentSimulation object that contains the position and force arrays for each particle.
+- `s`: a `MultiComponentSimulation` object that contains the position and force arrays for each particle.
 - `U::KAWCA`: the interaction type.
-- `cutoff`: the cutoff distance for the potential energy function. Default is 2.0^(1.0/6.0).
+- `cutoff`: the cutoff distance for the potential energy function. Default is `2.0^(1.0/6.0)`.
 """
 function calculate_forces!(s, U::KAWCA; cutoff=2.0^(1.0/6.0))
     r_array = s.r_array

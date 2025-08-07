@@ -29,6 +29,20 @@
 #     return S2_binned
 # end
 
+"""
+    find_structure_factor(s::Simulation; kmin=7.0, kmax=7.4, kfactor=1)
+
+Calculates the structure factor for a simulation.
+
+# Arguments
+- `s::Simulation`: The simulation.
+- `kmin=7.0`: The minimum k value.
+- `kmax=7.4`: The maximum k value.
+- `kfactor=1`: The k-factor.
+
+# Returns
+- `S`: The structure factor.
+"""
 function find_structure_factor(s::Simulation; kmin=7.0, kmax=7.4, kfactor=1)
     kspace = construct_k_space(s, (kmin, kmax); kfactor=kfactor, negative=true, rectangular=false)
     ρkt = find_density_modes(s, kspace; verbose=false)
@@ -36,6 +50,21 @@ function find_structure_factor(s::Simulation; kmin=7.0, kmax=7.4, kfactor=1)
     return F
 end
 
+"""
+    find_structure_factor(s::Simulation, kspace::KSpace, ρkt::AbstractDensityModes, k_sample_array::AbstractVector; k_binwidth=0.1)
+
+Calculates the structure factor for a simulation for a given array of k-values.
+
+# Arguments
+- `s::Simulation`: The simulation.
+- `kspace::KSpace`: The k-space.
+- `ρkt::AbstractDensityModes`: The density modes.
+- `k_sample_array::AbstractVector`: The array of k-values.
+- `k_binwidth=0.1`: The bin width for k.
+
+# Returns
+- `S_array`: An array of structure factors.
+"""
 function find_structure_factor(s::Simulation, kspace::KSpace, ρkt::AbstractDensityModes, k_sample_array::AbstractVector; k_binwidth=0.1)
     S_array = []
     for (ik, k) in enumerate(k_sample_array)
@@ -46,6 +75,21 @@ function find_structure_factor(s::Simulation, kspace::KSpace, ρkt::AbstractDens
     return S_array
 end
 
+"""
+    find_structure_factor(s::SingleComponentSimulation, kspace::KSpace, ρkt::SingleComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
+
+Calculates the structure factor for a single-component simulation.
+
+# Arguments
+- `s::SingleComponentSimulation`: The simulation.
+- `kspace::KSpace`: The k-space.
+- `ρkt::SingleComponentDensityModes`: The density modes.
+- `kmin=0.0`: The minimum k value.
+- `kmax=10.0^10.0`: The maximum k value.
+
+# Returns
+- `Sk`: The structure factor.
+"""
 function find_structure_factor(s::SingleComponentSimulation, kspace::KSpace, ρkt::SingleComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
     Sk = real_static_correlation_function(ρkt.Re, ρkt.Im, ρkt.Re, ρkt.Im, kspace, kmin, kmax)
     return Sk / s.N
@@ -53,24 +97,19 @@ end
 
 
 """
-Documentation for function find_structure_factor:
+    find_structure_factor(s::MultiComponentSimulation, kspace::KSpace, ρkt::MultiComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
 
 This function computes the static structure factor for a given simulation s using the density modes in ρkt and the k-space information in kspace. The structure factor is calculated separately for each species combination.
 
-Arguments:
+# Arguments
+- `s`: A `MultiComponentSimulation` object representing the simulation data.
+- `kspace`: A `KSpace` object containing information about the k-space grid.
+- `ρkt`: A `MultiComponentDensityModes` object representing the Fourier transform of the density fields for each species.
+- `kmin`: The minimum k value to include in the calculation. Default value is 0.0.
+- `kmax`: The maximum k value to include in the calculation. Default value is 10^10.
 
- - s: A MultiComponentSimulation object representing the simulation data.
- - kspace: A KSpace object containing information about the k-space grid.
- - ρkt: A MultiComponentDensityModes object representing the Fourier transform of the density fields for each species.
- - kmin: The minimum k value to include in the calculation. Default value is 0.0.
- - kmax: The maximum k value to include in the calculation. Default value is 10^10.
-Returns:
-
- - Sk: A square matrix of size N_species x N_species representing the static structure factor. Sk[i, j] represents the structure factor for species i and j.
-
-The function iterates over all possible species combinations (α, β), and calls the real_static_correlation_function 
-function to calculate the structure factor for each combination. The result is stored in the Sk matrix. 
-The function then returns Sk normalized by the total number of particles in the simulation.
+# Returns
+- `Sk`: A square matrix of size `N_species` x `N_species` representing the static structure factor. `Sk[i, j]` represents the structure factor for species i and j.
 """
 function find_structure_factor(s::MultiComponentSimulation, kspace::KSpace, ρkt::MultiComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
     N_species = s.N_species
@@ -89,6 +128,11 @@ end
 
 
 
+"""
+    _find_S4_offdiagonal(s, kspace, ρkt, costheta12_bounds, costheta13_bounds, phi23_bounds, q_arr, Sq_binned, maxsamples, maxq, iq1_set, iq2_set, iq3_set)
+
+Calculates the off-diagonal part of the four-point structure factor.
+"""
 function _find_S4_offdiagonal(s::Simulation, kspace::KSpace, ρkt::AbstractDensityModes, costheta12_bounds, costheta13_bounds, phi23_bounds, q_arr, Sq_binned, maxsamples, maxq, iq1_set, iq2_set, iq3_set)
     N_timesteps = size(ρkt.Re, 1)
     q_lengths = kspace.k_lengths
@@ -219,6 +263,11 @@ function _find_S4_offdiagonal(s::Simulation, kspace::KSpace, ρkt::AbstractDensi
 end
 
 
+"""
+    _dispatch_S4(s, kspace, ρkt, Ntheta13, Nphi23, q_arr, Sq_binned; q1=7.2, dq1=0.1, q2=7.2 , dq2=0.1, costheta12=cos(0π/4), dcostheta12=0.05, q3=7.1, dq3=0.1, dcostheta13=0.05, dphi23=0.05π, maxsamples=10^10)
+
+Dispatches the calculation of the four-point structure factor.
+"""
 function _dispatch_S4(s::Simulation, kspace::KSpace, ρkt::AbstractDensityModes, Ntheta13, Nphi23, q_arr, Sq_binned; q1=7.2, dq1=0.1, q2=7.2 , dq2=0.1, costheta12=cos(0π/4), dcostheta12=0.05, q3=7.1, dq3=0.1, dcostheta13=0.05, dphi23=0.05π, maxsamples=10^10)
     eps = 1e-5
     costheta13_array = collect(LinRange(-1+dcostheta13+eps , 1-dcostheta13-eps, Ntheta13))
@@ -257,6 +306,11 @@ function _dispatch_S4(s::Simulation, kspace::KSpace, ρkt::AbstractDensityModes,
     return costheta13_array, phi23_array, S4, S4conv
 end
 
+"""
+    find_S4_offiagonal(s, kspace, ρkt, Ntheta13, Nphi23; q1=7.2, dq1=0.1, q2=7.2 , dq2=0.1, costheta12=cos(0π/4), dcostheta12=0.05, q3=7.1, dq3=0.1, dcostheta13=0.05, dphi23=0.05π, maxsamples=10^10)
+
+Calculates the off-diagonal part of the four-point structure factor.
+"""
 function find_S4_offiagonal(s::SingleComponentSimulation, kspace::KSpace, ρkt::AbstractDensityModes, Ntheta13, Nphi23; q1=7.2, dq1=0.1, q2=7.2 , dq2=0.1, costheta12=cos(0π/4), dcostheta12=0.05, q3=7.1, dq3=0.1, dcostheta13=0.05, dphi23=0.05π, maxsamples=10^10)
     if maximum(kspace.k_array) < q1+q2+q3+dq1+dq2+dq3
         error("The wavevectors considered are too small to resolve the requested wave vector set. Maximal wavelength needs to be at least k=$(q1+q2+q3+dq1+dq2+dq3)")

@@ -1,4 +1,9 @@
 
+"""
+    CB_microkernel(neigh1::Vector{Int}, neigh2::Vector{Int})
+
+Calculates the fraction of neighbors that are common between two neighbor lists.
+"""
 function CB_microkernel(neigh1::Vector{Int}, neigh2::Vector{Int})
     N_neig1 = length(neigh1)
 
@@ -16,6 +21,11 @@ function CB_microkernel(neigh1::Vector{Int}, neigh2::Vector{Int})
 
 end
 
+"""
+    find_CB_per_particle(neighbourlists1, neighbourlists2, particle_i, dt_array, t1_t2_pair_array)
+
+Calculates the bond-breaking parameter `CB` for a single particle.
+"""
 function find_CB_per_particle(neighbourlists1, neighbourlists2, particle_i, dt_array, t1_t2_pair_array)
     Ndt = length(dt_array)
     CB = zeros(Ndt)
@@ -51,6 +61,11 @@ function find_CB_per_particle(neighbourlists1, neighbourlists2, particle_i, dt_a
     return CB
 end
 
+"""
+    find_CB(s, neighbourlists1, neighbourlists2)
+
+Calculates the bond-breaking parameter `CB` for all particles.
+"""
 function find_CB(s, neighbourlists1, neighbourlists2)
     dt_arr = s.dt_array
     t1_t2_pair_array = s.t1_t2_pair_array
@@ -63,6 +78,11 @@ function find_CB(s, neighbourlists1, neighbourlists2)
 end
 
 
+"""
+    compute_smoothed_gaussian(r_array, i, j, r, σ, box_size, ::Val{3})
+
+Computes a smoothed Gaussian function in 3D.
+"""
 function compute_smoothed_gaussian(r_array, i, j, r, σ, box_size, ::Val{3}) 
     ri = SVector{3, Float64}(r_array[1, i], r_array[2, i], r_array[3, i])
     rj = SVector{3, Float64}(r_array[1, j], r_array[2, j], r_array[3, j])
@@ -113,6 +133,11 @@ function compute_smoothed_gaussian(r_array, i, j, r, σ, box_size, ::Val{3})
 end
 
 
+"""
+    compute_smoothed_gaussian(r_array, i, j, r, σ, box_size, ::Val{2})
+
+Computes a smoothed Gaussian function in 2D.
+"""
 function compute_smoothed_gaussian(r_array, i, j, r, σ, box_size, ::Val{2})
     ri = SVector{2, Float64}(r_array[1, i], r_array[2, i])
     rj = SVector{2, Float64}(r_array[1, j], r_array[2, j])
@@ -147,6 +172,11 @@ end
 
 
 
+"""
+    find_χBB_smoothed(s, neighbourlists1, neighbourlists2, r, σ, CB_mean)
+
+Computes the smoothed bond-breaking susceptibility.
+"""
 function find_χBB_smoothed(s, neighbourlists1, neighbourlists2, r, σ, CB_mean)
     dims = size(s.r_array, 1)
     find_χBB_smoothed(s, neighbourlists1, neighbourlists2, r, σ, CB_mean, Val(dims))
@@ -194,6 +224,11 @@ function find_χBB_smoothed(s, neighbourlists1, neighbourlists2, r,  σ, CB_mean
 end
 
 
+"""
+    find_chi_BB(s, neighbourlists1, neighbourlists2, r_bin_edges::AbstractRange, cb; verbose=true)
+
+Computes the bond-breaking susceptibility.
+"""
 function find_chi_BB(s, neighbourlists1, neighbourlists2, r_bin_edges::AbstractRange, cb; verbose=true)
     Ndims = size(s.r_array, 1)
     if Ndims == 2
@@ -206,6 +241,11 @@ function find_chi_BB(s, neighbourlists1, neighbourlists2, r_bin_edges::AbstractR
 end
 
 
+"""
+    find_chi_BB_3D(s, neighbourlists1, neighbourlists2, r_bin_edges::AbstractRange, cb, verbose)
+
+Computes the bond-breaking susceptibility in 3D.
+"""
 function find_chi_BB_3D(s, neighbourlists1, neighbourlists2, r_bin_edges::AbstractRange, cb, verbose)
     box_size = s.box_sizes[1]
     r_bin_width = step(r_bin_edges)

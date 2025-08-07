@@ -1,3 +1,16 @@
+"""
+    find_overlap_function(s; a=0.5)
+
+Calculates the overlap function for a simulation.
+
+# Arguments
+- `s`: The simulation.
+- `a=0.5`: The cutoff distance.
+
+# Returns
+- `Fs`: The overlap function.
+- `Fs_pp`: The overlap function per particle.
+"""
 function find_overlap_function(s; a=0.5)
     N = s.N
     Ndt = length(s.dt_array)
