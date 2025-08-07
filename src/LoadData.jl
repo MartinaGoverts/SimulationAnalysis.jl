@@ -1,3 +1,26 @@
+"""
+    read_WCA_simulation(filenamefull, dt; maxt=-1, every=1, original=false)
+
+Read a simulation of WCA particles done with LAMMPS. in the data file, the columns correspond to the following:
+
+1. Atom ID
+2. x position
+3. y position
+4. z position
+5. x force
+6. y force
+7. z force
+
+# Arguments
+- `filenamefull::String`: Path to the simulation file.
+- `dt::Float64`: Time step.
+- `maxt::Int=-1`: Maximum number of time steps to read.
+- `every::Int=1`: Read every `every`-th time step.
+- `original::Bool=false`: Whether to reconstruct the original trajectories.
+
+# Returns
+- `SingleComponentSimulation`: A `SingleComponentSimulation` object.
+"""
 function read_WCA_simulation(filenamefull, dt; maxt=-1, every=1, original=false)
     println("Reading data file")
     f = open(filenamefull)
@@ -69,6 +92,31 @@ function read_WCA_simulation(filenamefull, dt; maxt=-1, every=1, original=false)
     return s
 end
 
+"""
+    read_Newtonian_KAWCA_simulation(filenamefull, dt; maxt=-1, every=1, original=false)
+
+Read a Newtonian simulation of a Kob-Andersen WCA mixture. The file was generated with LAMMPS. 
+The columns in the data file correspond to the following:
+
+1. Atom ID
+2. Atom type
+3. x position
+4. y position
+5. z position
+6. x velocities
+7. y velocities
+8. z velocities
+
+# Arguments
+- `filenamefull::String`: Path to the simulation file.
+- `dt::Float64`: Time step.
+- `maxt::Int=-1`: Maximum number of time steps to read.
+- `every::Int=1`: Read every `every`-th time step.
+- `original::Bool=false`: Whether to reconstruct the original trajectories.
+
+# Returns
+- `MultiComponentSimulation`: A `MultiComponentSimulation` object.
+"""
 function read_Newtonian_KAWCA_simulation(filenamefull, dt; maxt=-1, every=1, original=false)
     println("Reading data file")
     f = open(filenamefull)
@@ -160,6 +208,28 @@ function read_Newtonian_KAWCA_simulation(filenamefull, dt; maxt=-1, every=1, ori
     return s
 end
 
+"""
+    read_Brownian_KALJ_simulation(filenamefull, dt; maxt=-1, every=1, original=false, forces=true)
+
+Read a Brownian simulation of a Kob-Andersen Lennard-Jones mixture. The file was generated with LAMMPS. 
+The columns in the data file correspond to the following:
+1. Atom ID
+2. Atom type
+3. x position
+4. y position
+5. z position
+
+# Arguments
+- `filenamefull::String`: Path to the simulation file.
+- `dt::Float64`: Time step.
+- `maxt::Int=-1`: Maximum number of time steps to read.
+- `every::Int=1`: Read every `every`-th time step.
+- `original::Bool=false`: Whether to reconstruct the original trajectories.
+- `forces::Bool=true`: Whether to compute forces.
+
+# Returns
+- `MultiComponentSimulation`: A `MultiComponentSimulation` object.
+"""
 function read_Brownian_KALJ_simulation(filenamefull, dt; maxt=-1, every=1, original=false, forces=true)
     println("Reading data file")
     f = open(filenamefull)
@@ -252,6 +322,28 @@ function read_Brownian_KALJ_simulation(filenamefull, dt; maxt=-1, every=1, origi
 end
 
 
+"""
+    read_Brownian_KAWCA_simulation(filenamefull, dt; maxt=-1, every=1, original=false, forces=true)
+
+Read a Brownian simulation of a Kob-Andersen WCA mixture. The file was generated with LAMMPS. 
+The columns in the data file correspond to the following:
+1. Atom ID
+2. Atom type
+3. x position
+4. y position
+5. z position
+
+# Arguments
+- `filenamefull::String`: Path to the simulation file.
+- `dt::Float64`: Time step.
+- `maxt::Int=-1`: Maximum number of time steps to read.
+- `every::Int=1`: Read every `every`-th time step.
+- `original::Bool=false`: Whether to reconstruct the original trajectories.
+- `forces::Bool=true`: Whether to compute forces.
+
+# Returns
+- `MultiComponentSimulation`: A `MultiComponentSimulation` object.
+"""
 function read_Brownian_KAWCA_simulation(filenamefull, dt; maxt=-1, every=1, original=false, forces=true)
     println("Reading data file")
     f = open(filenamefull)
@@ -343,6 +435,21 @@ function read_Brownian_KAWCA_simulation(filenamefull, dt; maxt=-1, every=1, orig
     return s
 end
 
+"""
+    read_monodisperse_hard_sphere_simulation(filename; original=false, velocities=false, forcestype=false, dtarr=true)
+
+Read a simulation of monodisperse particles. The file was generated with SimulationCode.jl.
+
+# Arguments
+- `filename::String`: Path to the simulation file.
+- `original::Bool=false`: Whether to reconstruct the original trajectories.
+- `velocities::Bool=false`: Whether to read velocities.
+- `forcestype=false`: Type of forces to compute.
+- `dtarr::Bool=true`: Whether to compute the time step array.
+
+# Returns
+- `SingleComponentSimulation`: A `SingleComponentSimulation` object.
+"""
 function read_monodisperse_hard_sphere_simulation(filename; original=false, velocities=false, forcestype=false, dtarr=true)
     # println("Reading data file")
     f = h5open(filename)
@@ -405,6 +512,21 @@ function read_monodisperse_hard_sphere_simulation(filename; original=false, velo
     return s
 end
 
+"""
+    read_continuously_hard_sphere_simulation(filename; original=false, velocities=false, forcestype=false, time_origins="quasilog")
+
+Read a simulation of continuously polydisperse particles. The file was generated with SimulationCode.jl.
+
+# Arguments
+- `filename::String`: Path to the simulation file.
+- `original::Bool=false`: Whether to reconstruct the original trajectories.
+- `velocities::Bool=false`: Whether to read velocities.
+- `forcestype=false`: Type of forces to compute.
+- `time_origins="quasilog"`: How to select the time origins.
+
+# Returns
+- `SingleComponentSimulation`: A `SingleComponentSimulation` object.
+"""
 function read_continuously_hard_sphere_simulation(filename; original=false, velocities=false, forcestype=false, time_origins="quasilog")
     println("Reading data file")
     f = h5open(filename)
@@ -466,6 +588,17 @@ function read_continuously_hard_sphere_simulation(filename; original=false, velo
 end
 
 
+"""
+    reshape_data(r::Array{Array{Float64,2},1})
+
+Reshape the data from a vector of 2D arrays to a 3D array.
+
+# Arguments
+- `r::Array{Array{Float64,2},1}`: A vector of 2D arrays.
+
+# Returns
+- `Array{Float64,3}`: A 3D array.
+"""
 function reshape_data(r::Array{Array{Float64,2},1})
     N_timesteps = length(r)
     N, Ndim = size(r[1])    
@@ -480,6 +613,18 @@ function reshape_data(r::Array{Array{Float64,2},1})
     return rnew
 end
 
+"""
+    separate_trajectories(r, type_list)
+
+Separate the trajectories of different species.
+
+# Arguments
+- `r`: The trajectories.
+- `type_list`: A list of particle types.
+
+# Returns
+- A vector of trajectories, one for each species.
+"""
 function separate_trajectories(r, type_list)
     N_species = length(unique(type_list))
     Ndim, N, N_timesteps = size(r)
@@ -505,6 +650,15 @@ function separate_trajectories(r, type_list)
     return rvec
 end
 
+"""
+    remap_positions!(r::Array{Float64,3}, box_sizes)
+
+Remap the positions to be inside the box.
+
+# Arguments
+- `r::Array{Float64,3}`: The particle positions.
+- `box_sizes`: The box sizes.
+"""
 function remap_positions!(r::Array{Float64,3}, box_sizes)
     N_timesteps = length(r)
     Ndim, N, N_timesteps = size(r)
@@ -519,6 +673,18 @@ function remap_positions!(r::Array{Float64,3}, box_sizes)
 end
 
 
+"""
+    find_original_trajectories(r, box_sizes)
+
+Reconstruct the original trajectories from the remapped ones.
+
+# Arguments
+- `r`: The remapped trajectories.
+- `box_sizes`: The box sizes.
+
+# Returns
+- The original trajectories.
+"""
 function find_original_trajectories(r, box_sizes)
     Ndim, N, N_timesteps = size(r)  
     rr = deepcopy(r)
@@ -541,6 +707,18 @@ function find_original_trajectories(r, box_sizes)
     return rr
 end
 
+"""
+    find_quasilog_time_array(maxsteps; doublefactor=10)
+
+Create a quasi-logarithmic time array.
+
+# Arguments
+- `maxsteps`: The maximum number of steps.
+- `doublefactor=10`: The factor by which to double the time step.
+
+# Returns
+- A quasi-logarithmic time array.
+"""
 function find_quasilog_time_array(maxsteps; doublefactor=10)
     save_array = Int64[]
     t = 0
@@ -557,6 +735,18 @@ function find_quasilog_time_array(maxsteps; doublefactor=10)
     return save_array
 end
 
+"""
+    find_allowed_t1_t2_pair_array_quasilog(t_array; doublefactor=150)
+
+Find allowed time pairs for a quasi-logarithmic time array.
+
+# Arguments
+- `t_array`: The time array.
+- `doublefactor=150`: The factor by which to double the time step.
+
+# Returns
+- A tuple containing the `dt_array` and `t1_t2_pair_array`.
+"""
 function find_allowed_t1_t2_pair_array_quasilog(t_array; doublefactor=150)
     maxt = t_array[end]-t_array[1]
     dt_array = find_quasilog_time_array(maxt; doublefactor=doublefactor)
@@ -574,6 +764,19 @@ function find_allowed_t1_t2_pair_array_quasilog(t_array; doublefactor=150)
     return dt_array, t1_t2_pair_array
 end
 
+"""
+    find_log_time_array_multiple_starts(log_factor, N_starts, N_max)
+
+Create a logarithmic time array with multiple starts.
+
+# Arguments
+- `log_factor`: The logarithmic factor.
+- `N_starts`: The number of starting points.
+- `N_max`: The maximum number of steps.
+
+# Returns
+- A logarithmic time array with multiple starts.
+"""
 function find_log_time_array_multiple_starts(log_factor, N_starts, N_max)
     start_times = 0:(N_max÷N_starts):N_max
     when_to_save = Int[collect(start_times)...]
@@ -590,6 +793,18 @@ function find_log_time_array_multiple_starts(log_factor, N_starts, N_max)
 end
 
 
+"""
+    find_allowed_t1_t2_pair_array_log_multstarts(t_array, N_starts)
+
+Find allowed time pairs for a logarithmic time array with multiple starts.
+
+# Arguments
+- `t_array`: The time array.
+- `N_starts`: The number of starting points.
+
+# Returns
+- A tuple containing the `dt_array` and `t1_t2_pair_array`.
+"""
 function find_allowed_t1_t2_pair_array_log_multstarts(t_array, N_starts)
     dt = t_array[2] - t_array[1]
     t_integer_array = round.(Int, t_array/dt)
@@ -619,4 +834,15 @@ end
 
 
 
+"""
+    calculate_forces!(s, forcestype::Bool)
+
+Calculate the forces for a simulation.
+
+This is a placeholder function that throws an error if `forcestype` is true.
+
+# Arguments
+- `s`: The simulation object.
+- `forcestype::Bool`: Whether to calculate forces.
+"""
 calculate_forces!(s, forcestype::Bool) = forcestype ? error("Specify force type") : nothing

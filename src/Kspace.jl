@@ -1,4 +1,17 @@
 
+"""
+    KSpace{dims, S, OA}
+
+A struct to hold the k-space information of a simulation.
+
+# Fields
+- `s::S`: The simulation object.
+- `Nk::Int64`: The number of k-vectors.
+- `k_lengths::Array{Float64, 1}`: The lengths of the k-vectors.
+- `k_array::Array{Float64, 2}`: The k-vectors.
+- `kfactor::Int64`: The k-factor.
+- `cartesian_to_linear::OA`: A mapping from Cartesian to linear indices.
+"""
 struct KSpace{dims, S, OA}
     s::S
     Nk::Int64
@@ -8,11 +21,42 @@ struct KSpace{dims, S, OA}
     cartesian_to_linear::OA
 end
 
+"""
+    construct_k_space(s::Simulation, bounds; kfactor=1, negative=false, rectangular=false)
+
+Construct the k-space of a simulation.
+
+# Arguments
+- `s::Simulation`: The simulation object.
+- `bounds`: The bounds of the k-space.
+- `kfactor=1`: The k-factor.
+- `negative=false`: Whether to include negative k-vectors.
+- `rectangular=false`: Whether to use a rectangular k-space.
+
+# Returns
+- A `KSpace` object.
+"""
 function construct_k_space(s::Simulation, bounds; kfactor=1, negative=false, rectangular=false)
     k_lengths, k_array, cartesian_to_linear = find_k_array(bounds, s.box_sizes, s.Ndims; kfactor=kfactor, negative=negative, rectangular=rectangular)
     return KSpace{s.Ndims, typeof(s), typeof(cartesian_to_linear)}(s, length(k_lengths), k_lengths, k_array, kfactor, cartesian_to_linear)
 end
 
+"""
+    find_k_array(bounds, box_sizes, dims; kfactor=1, rectangular=false, negative=false)
+
+Find the k-vectors in a given k-space.
+
+# Arguments
+- `bounds`: The bounds of the k-space.
+- `box_sizes`: The box sizes.
+- `dims`: The number of dimensions.
+- `kfactor=1`: The k-factor.
+- `rectangular=false`: Whether to use a rectangular k-space.
+- `negative=false`: Whether to include negative k-vectors.
+
+# Returns
+- A tuple containing the `k_lengths`, `k_array`, and `cartesian_to_linear`.
+"""
 function find_k_array(bounds, box_sizes, dims; kfactor=1, rectangular=false, negative=false)
     if dims==3
         return find_k_array_3D(bounds, box_sizes; kfactor=kfactor, rectangular=rectangular, negative=negative)
@@ -23,6 +67,21 @@ function find_k_array(bounds, box_sizes, dims; kfactor=1, rectangular=false, neg
     end
 end
 
+"""
+    find_k_array_3D(bounds, box_sizes; kfactor=1, rectangular=false, negative=false)
+
+Find the k-vectors in a 3D k-space.
+
+# Arguments
+- `bounds`: The bounds of the k-space.
+- `box_sizes`: The box sizes.
+- `kfactor=1`: The k-factor.
+- `rectangular=false`: Whether to use a rectangular k-space.
+- `negative=false`: Whether to include negative k-vectors.
+
+# Returns
+- A tuple containing the `k_lengths`, `k_array`, and `cartesian_to_linear`.
+"""
 function find_k_array_3D(bounds, box_sizes; kfactor=1, rectangular=false, negative=false)
     #bounds
     @assert bounds[1] < bounds[2]
@@ -69,6 +128,21 @@ function find_k_array_3D(bounds, box_sizes; kfactor=1, rectangular=false, negati
     return k_lengths, k_array, cartesian_to_linear
 end
 
+"""
+    find_k_array_2D(bounds, box_sizes; kfactor=1, rectangular=false, negative=false)
+
+Find the k-vectors in a 2D k-space.
+
+# Arguments
+- `bounds`: The bounds of the k-space.
+- `box_sizes`: The box sizes.
+- `kfactor=1`: The k-factor.
+- `rectangular=false`: Whether to use a rectangular k-space.
+- `negative=false`: Whether to include negative k-vectors.
+
+# Returns
+- A tuple containing the `k_lengths`, `k_array`, and `cartesian_to_linear`.
+"""
 function find_k_array_2D(bounds, box_sizes; kfactor=1, rectangular=false, negative=false)
     #bounds
     @assert bounds[1] < bounds[2]

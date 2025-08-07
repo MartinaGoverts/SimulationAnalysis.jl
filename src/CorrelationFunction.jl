@@ -1,15 +1,16 @@
 
 """
-    find_correlation_function!(C, A, B, kspace, dt_array, t1_t2_pair_array)
+    real_correlation_function!(C, ReA, ImA, ReB, ImB, kspace, dt_array, t1_t2_pair_array, kmin, kmax)
 
-Computes the correlation function between two lists of observables. The observables are assumed to be complex-valued. The correlation function is a complex number.
+Computes the real part of the correlation function between two lists of observables. The observables are assumed to be complex-valued.
 The correlation function is computed for a given k-space, a given set of time differences, and a given set of pairs of times. The correlation function is computed for each time difference and is stored in the array `C`.
 
-
 # Arguments
-- `C::Array{Complex{Float64}, 1}`: The array where the correlation function is stored.
-- `A::Array{Complex{Float64}, 2}`: The first list of observables. The first index is the wavevector index and the second index is the time index.
-- `B::Array{Complex{Float64}, 2}`: The second list of observables.
+- `C::Array{Float64, 1}`: The array where the correlation function is stored.
+- `ReA::Array{Float64, 2}`: The real part of the first list of observables. The first index is the time index and the second index is the wavevector index.
+- `ImA::Array{Float64, 2}`: The imaginary part of the first list of observables.
+- `ReB::Array{Float64, 2}`: The real part of the second list of observables.
+- `ImB::Array{Float64, 2}`: The imaginary part of the second list of observables.
 - `kspace::KSpace`: The k-space.
 - `dt_array::Array{Float64, 1}`: The array of time differences.
 - `t1_t2_pair_array::Array{Array{Int64, 2}, 1}`: The array of pairs of times. Each element of the array is a matrix with two columns. Each row of the matrix contains the indices of the times `t1` and `t2` for which the correlation function is computed.
@@ -18,9 +19,8 @@ The correlation function is computed for a given k-space, a given set of time di
 
 # Returns
 - `Nothing`: The correlation function is stored in the array `C`.
-
 """
-function real_correlation_function!(C, ReA::Array{Float64, 2}, ImA::Array{Float64, 2}, ReB::Array{Float64, 2}, ImB::Array{Float64, 2}, 
+function real_correlation_function!(C, ReA::Array{Float64, 2}, ImA::Array{Float64, 2}, ReB::Array{Float64, 2}, ImB::Array{Float64, 2},
                                     kspace::KSpace, dt_array, t1_t2_pair_array, kmin, kmax)
     # not normalized by N!
     klengths = kspace.k_lengths
@@ -67,7 +67,7 @@ The correlation function is averaged over the first dimension of A and B, a give
 # Returns
 - `Nothing`: The correlation function is stored in the array `AB`.
 """
- function find_correlation_function!(AB, A, B, dt_array, t1_t2_pair_array)
+function find_correlation_function!(AB, A, B, dt_array, t1_t2_pair_array)
     Nk = size(A, 1)
     @assert size(A) == size(B)
     for iδt in eachindex(dt_array)

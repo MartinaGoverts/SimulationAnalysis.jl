@@ -1,6 +1,6 @@
 # SimulationAnalysis.jl
 
-[![Docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://ipihlama.github.io/SimulationAnalysis.jl/dev)
+[![Docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://IlianPihlajamaa.github.io/SimulationAnalysis.jl/dev)
 
 `SimulationAnalysis.jl` is a Julia package for analyzing data from particle-based simulations. It provides a collection of tools for computing various physical quantities and performing common analysis tasks.
 
@@ -37,4 +37,4 @@ println("Mean Squared Displacement:")
 println(msd)
 ```
 
-For more detailed information and a complete list of features, please see the [documentation](https://ipihlama.github.io/SimulationAnalysis.jl/dev).
+For more detailed information and a complete list of features, please see the [documentation](https://IlianPihlajamaa.github.io/SimulationAnalysis.jl/dev).
