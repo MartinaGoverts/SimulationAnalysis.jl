@@ -1,21 +1,11 @@
 # API Reference
 
+
 ## Simulation
 
 ```@docs
 SimulationAnalysis.SingleComponentSimulation
 SimulationAnalysis.MultiComponentSimulation
-```
-
-## Load Data
-
-```@docs
-SimulationAnalysis.read_WCA_simulation
-SimulationAnalysis.read_Newtonian_KAWCA_simulation
-SimulationAnalysis.read_Brownian_KALJ_simulation
-SimulationAnalysis.read_Brownian_KAWCA_simulation
-SimulationAnalysis.read_monodisperse_hard_sphere_simulation
-SimulationAnalysis.read_continuously_hard_sphere_simulation
 ```
 
 ## K-Space
@@ -40,13 +30,6 @@ SimulationAnalysis.SingleComponentDensityModes
 SimulationAnalysis.MultiComponentDensityModes
 ```
 
-## F4 Diagonal
-
-```@docs
-SimulationAnalysis.find_F4_diagonal
-SimulationAnalysis.find_F4_diagonal_all_k
-SimulationAnalysis.find_F4_super_diagonal
-```
 
 ## Forces
 
@@ -69,7 +52,6 @@ SimulationAnalysis.find_self_intermediate_scattering_function
 
 ```@docs
 SimulationAnalysis.find_structure_factor
-SimulationAnalysis.find_S4_offiagonal
 ```
 
 ## Mean Squared Displacement
@@ -96,8 +78,6 @@ SimulationAnalysis.find_voronoi_neighborlists
 
 ```@docs
 SimulationAnalysis.find_CB
-SimulationAnalysis.find_χBB_smoothed
-SimulationAnalysis.find_chi_BB
 ```
 
 ## Utils
