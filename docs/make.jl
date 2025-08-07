@@ -11,7 +11,8 @@ makedocs(
         "Examples" => "examples.md",
         "API" => "api.md",
     ],
-    doctest = false
+    doctest = false,
+    checkdocs = :public,
 )
 
 deploydocs(
