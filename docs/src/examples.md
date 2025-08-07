@@ -219,10 +219,11 @@ plot(dt*sim.dt_array[2:end], Cb[2:end],
 
 ## Mean Squared Displacement (MSD)
 
-The mean squared displacement is a measure of the average distance a particle travels over time. By default, the particles are stored as mapped into the main box. Therefore we need to construct the date with the original trajectories.
+The mean squared displacement is a measure of the average distance a particle travels over time. By default, the particles are stored as mapped into the main box. Therefore we need to reconstruct the data with the original trajectories.
 ```julia
 # Calculate the mean squared displacement
-sim_original = SimulationAnalysis.read_continuously_hard_sphere_simulation(filepath; time_origins=10, original=true)
+sim_original = SimulationAnalysis.read_continuously_hard_sphere_simulation(filepath;
+             time_origins=10, original=true)
 msd = SimulationAnalysis.find_mean_squared_displacement(sim_original)
 
 # Plot the MSD

@@ -28,7 +28,7 @@ filepath = joinpath(dirname(pathof(SimulationAnalysis)), "..", "test", "data", "
 sim = SimulationAnalysis.read_continuously_hard_sphere_simulation(filepath; time_origins=10)
 ```
 
-The `sim` object now holds all the simulation data, including particle positions, box dimensions, and time steps.
+The `sim` object now holds all the simulation data, including particle positions, box dimensions, and time steps. If you have access to data in a different format, you need to construct a Simulation object manually.
 
 ## 3. Calculating the Radial Distribution Function (g(r))
 
@@ -39,7 +39,7 @@ Let's calculate g(r) for our simulation. We need to specify the number of bins a
 ```julia
 # Set the parameters for the g(r) calculation
 Nbins = 100
-rmax = 10.0
+rmax = 5.0
 
 # Calculate the radial distribution function
 bin_centres, gr = find_radial_distribution_function(sim, Nbins, rmax)
@@ -49,7 +49,7 @@ The `find_radial_distribution_function` function returns two arrays: `bin_centre
 
 ## 4. Visualizing the Results
 
-A plot is often the best way to interpret the g(r). Let's use `Plots.jl` to visualize the result.
+Let's use `Plots.jl` to visualize the result.
 
 ```julia
 using Plots
@@ -69,4 +69,4 @@ plot(bin_centres, gr,
 
 This will generate a plot showing the characteristic peaks of the g(r) for a liquid-like structure. The first peak corresponds to the nearest neighbors, the second to the next-nearest neighbors, and so on.
 
-This tutorial has demonstrated a basic workflow for analyzing simulation data with `SimulationAnalysis.jl`. You can explore the [Examples](examples.md) page for more advanced analysis techniques.
+This tutorial has demonstrated a basic workflow for analyzing simulation data with `SimulationAnalysis.jl`. You can explore the [Examples](examples.md) page for other analysis techniques.
