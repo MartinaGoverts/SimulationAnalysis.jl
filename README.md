@@ -28,7 +28,8 @@ Here is a basic example of how to use the package to load a simulation and calcu
 using SimulationAnalysis
 
 # Load simulation data
-simulation = load_simulation("path/to/your/simulation_data.h5")
+file = joinpath("test", "data", "test_trajectory.h5")
+simulation = SimulationAnalysis.read_continuously_hard_sphere_simulation(file; time_origins=10)
 
 # Calculate the mean squared displacement
 msd = find_mean_squared_displacement(simulation)
