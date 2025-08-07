@@ -70,7 +70,7 @@ k_lengths: Vector{Float64}
 k_array: Matrix{Float64}
 kfactor: 1
 cartesian_to_linear: OffsetArrays.OffsetArray{Int64, 3, Array{Int64, 3}}
-
+```
 We can compute the corresponding density modes:
 ```julia
 density_modes = SimulationAnalysis.find_density_modes(sim, kspace; verbose=false)
