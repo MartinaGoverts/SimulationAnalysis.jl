@@ -40,7 +40,7 @@ include("Utils.jl")
 
 function show(io::IO,  ::MIME"text/plain", s::Union{KSpace, Simulation})
     println(io, "This is a $(typeof(s)).")
-    println(io, "It contains ")
+    println(io, "It contains the fields: ")
     for fieldname in fieldnames(typeof(s))
         if getfield(s, fieldname) isa Union{Int, Float64, String}
             println(io, "$(fieldname): $(getfield(s, fieldname))")

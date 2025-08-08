@@ -20,11 +20,12 @@ sim = SimulationAnalysis.read_continuously_hard_sphere_simulation(filepath; time
 display(sim)
 ```
 ```
+Reading data file
 This is a SingleComponentSimulation.
-It contains
+It contains the fields:
 N: 1000
 Ndims: 3
-Nt:  430
+Nt: 430
 dt: 0.01
 r_array: Array{Float64, 3}
 v_array: Array{Float64, 3}
@@ -34,7 +35,7 @@ t_array: Vector{Float64}
 box_sizes: Vector{Float64}
 dt_array: Vector{Float64}
 t1_t2_pair_array: Vector{Matrix{Int64}}
-filepath: C:\Users\Me\.julia\dev\SimulationAnalysis\src\..\test\data\test_trajectory.h5
+filepath: C:\Users\Ilian\.julia\dev\SimulationAnalysis\src\..\test\data\test_trajectory.h5
 ```
 
 So as we can see, we have loaded a simulation object of 1000 particles with 430 saved frames, at the time points given by `t_array`.
