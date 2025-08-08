@@ -157,7 +157,7 @@ end
 Recalculates the total force on all particles according to the langevin equation F = -∇U - γv. This function also updates the
 total potential energy in the output datastructure.
 """
-function calculate_forces!(s, U; friction=false, cutoff=1.25)
+function calculate_forces!(s, U::InteractionPotential; friction=false, cutoff=1.25)
     r_array = s.r_array
     F_array = s.F_array
     F_array .= 0

@@ -1,7 +1,7 @@
 name = "SimulationAnalysis"
 uuid = "4b2ff026-35bb-4ce8-b55e-5370bda4a9ea"
 authors = ["Ilian Pihlajamaa <ilian.pihlajamaa@gmail.com>"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 Bessels = "0e736298-9ec6-45e8-9647-e4fc86a2fe38"

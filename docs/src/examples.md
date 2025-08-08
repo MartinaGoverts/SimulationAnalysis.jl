@@ -4,7 +4,7 @@ This page provides examples for various analysis functions available in `Simulat
 
 ## Common Setup
 
-All examples on this page use a sample trajectory file included with the package. The following code loads the simulation data and will be used as a common starting point for the examples below. We also assume that you have `Plots.jl` installed and loaded for the plotting examples.
+All examples on this page use a sample trajectory file included with the package. The following code loads the simulation data and will be used as a common starting point for the examples below. We also assume that you have `Plots.jl` installed for the plotting examples.
 
 ```julia
 using SimulationAnalysis
@@ -17,25 +17,24 @@ filepath = joinpath(dirname(pathof(SimulationAnalysis)), "..", "test", "data", "
 # If you have access to the data in some other format, you need to 
 # construct a Simulation object manually.
 sim = SimulationAnalysis.read_continuously_hard_sphere_simulation(filepath; time_origins=10)
-dt = sim.t_array[2] - sim.t_array[1]
 display(sim)
-println("The number of saved time frames is equal to $(length(sim.t_array)).")
 ```
 ```
 This is a SingleComponentSimulation.
 It contains
 N: 1000
 Ndims: 3
+Nt:  430
+dt: 0.01
 r_array: Array{Float64, 3}
 v_array: Array{Float64, 3}
 F_array: Array{Float64, 3}
 D_array: Vector{Float64}
 t_array: Vector{Float64}
 box_sizes: Vector{Float64}
-dt_array: Vector{Int64}
+dt_array: Vector{Float64}
 t1_t2_pair_array: Vector{Matrix{Int64}}
 filepath: C:\Users\Me\.julia\dev\SimulationAnalysis\src\..\test\data\test_trajectory.h5
-The number of saved time frames is equal to 430.
 ```
 
 So as we can see, we have loaded a simulation object of 1000 particles with 430 saved frames, at the time points given by `t_array`.
@@ -148,7 +147,7 @@ The intermediate scattering function, F(k, t), measures the decay of density cor
 isf = SimulationAnalysis.find_intermediate_scattering_function(sim; kmin=7.0, kmax=7.4)
 
 # Plot the ISF
-plot(dt * sim.dt_array[2:end], isf[2:end],
+plot(sim.dt_array[2:end], isf[2:end],
     xlabel="Time t",
     ylabel="F(k, t)",
     title="Intermediate Scattering Function",
@@ -170,7 +169,7 @@ The self-intermediate scattering function, F_s(k, t), is the single-particle equ
 self_isf, self_isf_per_particle = SimulationAnalysis.find_self_intermediate_scattering_function(sim, kspace; kmin=7.0, kmax=7.4)
 
 # Plot the Self-ISF
-plot(dt * sim.dt_array[2:end], self_isf[2:end],
+plot(sim.dt_array[2:end], self_isf[2:end],
     xlabel="Time",
     ylabel="F_s(k, t)",
     title="Self-Intermediate Scattering Function",
@@ -232,7 +231,7 @@ Cb_per_particle = SimulationAnalysis.find_CB(sim, neighborlists, neighborlists)
 Cb = sum(Cb_per_particle, dims=2)[:] / size(Cb_per_particle, 2)
 
 # Plot the bond correlation function for a single particle
-plot(dt*sim.dt_array[2:end], Cb[2:end],
+plot(sim.dt_array[2:end], Cb[2:end],
     xlabel="Time",
     ylabel="Cb(t)",
     title="Bond Correlation Function",
@@ -254,7 +253,7 @@ sim_original = SimulationAnalysis.read_continuously_hard_sphere_simulation(filep
 msd = SimulationAnalysis.find_mean_squared_displacement(sim_original)
 
 # Plot the MSD
-plot(dt*sim.dt_array[2:end], msd[2:end],
+plot(sim.dt_array[2:end], msd[2:end],
     xlabel="Time",
     ylabel="MSD",
     title="Mean Squared Displacement",

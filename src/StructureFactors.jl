@@ -128,7 +128,6 @@ function find_structure_factor(s::MultiComponentSimulation, kspace::KSpace, ρkt
     Sk = zeros(N_species, N_species)
     for α=1:N_species
         for β = α:N_species
-            # real_correlation_function!(Fk[α,β], ρkt.Re[α], ρkt.Im[α], ρkt.Re[β], ρkt.Im[β], kspace, s.dt_array, s.t1_t2_pair_array, kmin, kmax)
             Sk[β, α] = real_static_correlation_function(ρkt.Re[α], ρkt.Im[α], ρkt.Re[β], ρkt.Im[β], kspace, kmin, kmax)
             if α != β
                 Sk[α, β] = Sk[β, α]
