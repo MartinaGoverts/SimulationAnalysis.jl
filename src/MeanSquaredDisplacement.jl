@@ -91,9 +91,9 @@ This parameter is used to quantify the deviation from Gaussian behavior in parti
 α2(msd, mqd, dims) = dims/(dims+2) * mqd / msd^2 - 1
 
 """
-    find_non_gaussian_parameter(simulation::Simulation; per_particle=false)
+    find_non_gaussian_parameter(simulation::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}; per_particle=false)
 """
-function find_non_gaussian_parameter(simulation::Simulation; per_particle=false)
+function find_non_gaussian_parameter(simulation::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}; per_particle=false)
     msd, msd_per_particle = find_mean_squared_displacement(simulation.r_array, simulation.dt_array, simulation.t1_t2_pair_array, 2)
     mqd, mqd_per_particle = find_mean_squared_displacement(simulation.r_array, simulation.dt_array, simulation.t1_t2_pair_array, 4)
     dims = simulation.Ndims

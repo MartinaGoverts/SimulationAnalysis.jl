@@ -82,7 +82,7 @@ function find_structure_factor(s::Simulation, kspace::KSpace, ρkt::AbstractDens
 end
 
 """
-    find_structure_factor(s::SingleComponentSimulation, kspace::KSpace, ρkt::SingleComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
+    find_structure_factor(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, kspace::KSpace, ρkt::SingleComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
 
 Calculates the static structure factor `S(k)` for a single-component simulation.
 
@@ -90,7 +90,7 @@ This is the main implementation that computes `S(k) = (1/N) * <|ρ(k)|^2>` from 
 The average is performed over time and k-vectors within the magnitude range `[kmin, kmax]`.
 
 # Arguments
-- `s::SingleComponentSimulation`: The simulation data.
+- `s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}`: The simulation data.
 - `kspace::KSpace`: The pre-computed k-space.
 - `ρkt::SingleComponentDensityModes`: The pre-computed density modes.
 - `kmin::Float64=0.0`: The minimum magnitude of k-vectors to include in the average.
@@ -99,7 +99,7 @@ The average is performed over time and k-vectors within the magnitude range `[km
 # Returns
 - `Sk::Float64`: The value of the structure factor `S(k)`.
 """
-function find_structure_factor(s::SingleComponentSimulation, kspace::KSpace, ρkt::SingleComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
+function find_structure_factor(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, kspace::KSpace, ρkt::SingleComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
     Sk = real_static_correlation_function(ρkt.Re, ρkt.Im, ρkt.Re, ρkt.Im, kspace, kmin, kmax)
     return Sk / s.N
 end
@@ -144,7 +144,7 @@ end
 
 Calculates the off-diagonal part of the four-point structure factor.
 """
-function _find_S4_offdiagonal(s::Simulation, kspace::KSpace, ρkt::AbstractDensityModes, costheta12_bounds, costheta13_bounds, phi23_bounds, q_arr, Sq_binned, maxsamples, maxq, iq1_set, iq2_set, iq3_set)
+function _find_S4_offdiagonal(s::SingleComponentSimulation, kspace::KSpace, ρkt::AbstractDensityModes, costheta12_bounds, costheta13_bounds, phi23_bounds, q_arr, Sq_binned, maxsamples, maxq, iq1_set, iq2_set, iq3_set)
     N_timesteps = size(ρkt.Re, 1)
     q_lengths = kspace.k_lengths
     q_array = kspace.k_array
@@ -153,7 +153,7 @@ function _find_S4_offdiagonal(s::Simulation, kspace::KSpace, ρkt::AbstractDensi
     dqx = 2π/s.box_sizes[1]*kspace.kfactor
     dqy = 2π/s.box_sizes[2]*kspace.kfactor
     dqz = 2π/s.box_sizes[3]*kspace.kfactor
-
+    @assert s.Ndims == 3
     S₄ = 0.0
     S₄_conv = 0.0
     total_q_samples = 0

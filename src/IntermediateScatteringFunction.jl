@@ -51,7 +51,7 @@ function find_intermediate_scattering_function(s::Simulation, kspace::KSpace, ρ
 end
 
 """
-    find_intermediate_scattering_function(s::SingleComponentSimulation, kspace::KSpace, ρkt::SingleComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
+    find_intermediate_scattering_function(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, kspace::KSpace, ρkt::SingleComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
 
 Calculates the coherent intermediate scattering function `F(k, t)` for a single-component simulation.
 
@@ -59,7 +59,7 @@ This is the main implementation that computes `F(k, t) = (1/N) * <ρ(k, t) ρ*(-
 The average is performed over time origins and k-vectors within the magnitude range `[kmin, kmax]`.
 
 # Arguments
-- `s::SingleComponentSimulation`: The simulation data.
+- `s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}`: The simulation data.
 - `kspace::KSpace`: The pre-computed k-space.
 - `ρkt::SingleComponentDensityModes`: The pre-computed density modes.
 - `kmin::Float64=0.0`: The minimum magnitude of k-vectors to include in the average.
@@ -68,7 +68,7 @@ The average is performed over time origins and k-vectors within the magnitude ra
 # Returns
 - `Fk::Vector{Float64}`: A vector containing `F(k, t)` for each time delay `Δt` in `s.dt_array`.
 """
-function find_intermediate_scattering_function(s::SingleComponentSimulation, kspace::KSpace, ρkt::SingleComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
+function find_intermediate_scattering_function(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, kspace::KSpace, ρkt::SingleComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
     Ndt = length(s.dt_array)
     Fk = zeros(Ndt)
     real_correlation_function!(Fk, ρkt.Re, ρkt.Im, ρkt.Re, ρkt.Im, kspace, s.dt_array, s.t1_t2_pair_array, kmin, kmax)
@@ -160,7 +160,7 @@ function find_self_intermediate_scattering_function(s::Simulation, kspace::KSpac
 end
 
 """
-    find_self_intermediate_scattering_function(s::SingleComponentSimulation, kspace::KSpace; kmin=0.0, kmax=10.0^10.0)
+    find_self_intermediate_scattering_function(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, kspace::KSpace; kmin=0.0, kmax=10.0^10.0)
 
 Calculates the self-intermediate scattering function `Fs(k, t)` for a single-component simulation.
 
@@ -169,7 +169,7 @@ The calculation is done without pre-calculating density modes to avoid large mem
 The average is performed over time origins and k-vectors within the magnitude range `[kmin, kmax]`.
 
 # Arguments
-- `s::SingleComponentSimulation`: The simulation data.
+- `s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}`: The simulation data.
 - `kspace::KSpace`: The pre-computed k-space.
 - `kmin::Float64=0.0`: The minimum magnitude of k-vectors to include in the average.
 - `kmax::Float64=10.0^10.0`: The maximum magnitude of k-vectors to include in the average.
@@ -178,7 +178,7 @@ The average is performed over time origins and k-vectors within the magnitude ra
 - `Fk::Vector{Float64}`: A vector containing `Fs(k, t)` for each time delay `Δt` in `s.dt_array`.
 - `Fks_per_particle::Matrix{Float64}`: A `(Ndt, N)` matrix containing the self-intermediate scattering function for each particle.
 """
-function find_self_intermediate_scattering_function(s::SingleComponentSimulation, kspace::KSpace; kmin=0.0, kmax=10.0^10.0)
+function find_self_intermediate_scattering_function(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, kspace::KSpace; kmin=0.0, kmax=10.0^10.0)
     kmask = (kmin .< kspace.k_lengths .< kmax)
     k_lengths = kspace.k_lengths[kmask]
     k_array = kspace.k_array[:, kmask]

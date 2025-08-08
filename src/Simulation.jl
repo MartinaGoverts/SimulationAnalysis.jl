@@ -72,3 +72,43 @@ mutable struct MultiComponentSimulation <: Simulation
     t1_t2_pair_array::Vector{Array{Int64, 2}}
     filepath::String
 end
+
+"""
+    SelfPropelledVoronoiSimulation
+
+A mutable struct that holds all data for a self-propelled Voronoi particle simulation.
+
+# Fields
+- `N::Int64`: Number of particles.
+- `Ndims::Int64`: Number of spatial dimensions.
+- `Nt::Int64`: Number of time steps.
+- `dt::Float64`: Time step size.
+- `r_array::Array{Float64, 3}`: Particle positions.
+- `u_array::Array{Float64, 2}`: Particle orientations (radians).
+- `F_array::Array{Float64, 3}`: Forces on particles.
+- `perimeter_array::Array{Float64, 2}`: Perimeters of Voronoi cells.
+- `area_array::Array{Float64, 2}`: Areas of Voronoi cells.
+- `Epot_array::Array{Float64, 1}`: Potential energies.
+- `t_array::Vector{Float64}`: Vector of time points.
+- `box_sizes::Vector{Float64}`: Dimensions of the simulation box.
+- `dt_array::Vector{Float64}`: Time step sizes.
+- `t1_t2_pair_array::Vector{Array{Int64, 2}}`: Array of `(t1, t2)` index pairs.
+- `filepath::String`: Path to the file from which the simulation data was loaded.
+"""
+struct SelfPropelledVoronoiSimulation <: Simulation
+    N::Int64
+    Ndims::Int64
+    Nt::Int64
+    dt::Float64
+    r_array::Array{Float64, 3}
+    u_array::Array{Float64, 2}
+    F_array::Array{Float64, 3}
+    perimeter_array::Array{Float64, 2}
+    area_array::Array{Float64, 2}
+    Epot_array::Vector{Float64} 
+    t_array::Vector{Float64}
+    box_sizes::Vector{Float64}
+    dt_array::Vector{Float64}
+    t1_t2_pair_array::Vector{Array{Int64, 2}}
+    filepath::String
+end

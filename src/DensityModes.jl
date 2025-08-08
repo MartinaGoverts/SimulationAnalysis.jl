@@ -64,7 +64,7 @@ This function is computationally intensive. The `verbose` option can be used to 
 
 See also: [`SingleComponentDensityModes`](@ref), [`find_density_modes(::MultiComponentSimulation, ::KSpace)`](@ref)
 """
-function find_density_modes(s::SingleComponentSimulation, kspace::KSpace; verbose=true)
+function find_density_modes(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, kspace::KSpace; verbose=true)
     Ndim, N, N_timesteps = size(s.r_array)
     Nk = kspace.Nk
     Reρ = zeros(N_timesteps, Nk)

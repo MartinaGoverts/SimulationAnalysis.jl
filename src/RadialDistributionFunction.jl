@@ -167,14 +167,14 @@ function find_radial_distribution_function(s::MultiComponentSimulation, Nbins, r
 end
 
 """
-    find_radial_distribution_function(s::SingleComponentSimulation, Nbins::Int, rmax::Float64; Ntasks::Int=1, verbose=true)
+    find_radial_distribution_function(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, Nbins::Int, rmax::Float64; Ntasks::Int=1, verbose=true)
 
 Calculates the radial distribution function `g(r)` for a single-component simulation.
 
 The `g(r)` describes the probability of finding a particle at a distance `r` from another particle, relative to that of an ideal gas.
 
 # Arguments
-- `s::SingleComponentSimulation`: The simulation data.
+- `s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}`: The simulation data.
 - `Nbins::Int`: The number of bins to use for the histogram.
 - `rmax::Float64`: The maximum distance to consider. If negative, it's set to half the smallest box dimension.
 - `Ntasks::Int=1`: The number of parallel tasks to use for the calculation.
@@ -184,7 +184,7 @@ The `g(r)` describes the probability of finding a particle at a distance `r` fro
 - `bin_centres::Vector{Float64}`: A vector of the centre points of the histogram bins.
 - `g_r::Vector{Float64}`: A vector containing the values of `g(r)`.
 """
-function find_radial_distribution_function(s::SingleComponentSimulation, Nbins::Int, rmax; Ntasks=1, verbose=true)
+function find_radial_distribution_function(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, Nbins::Int, rmax; Ntasks=1, verbose=true)
     if rmax < 0.0
         rmax = minimum(box_sizes)/2
     end
@@ -201,14 +201,14 @@ function find_radial_distribution_function(s::SingleComponentSimulation, Nbins::
 end
 
 """
-    find_radial_distribution_function(s::SingleComponentSimulation, dr::Float64, rmax::Float64; Ntasks::Int=1, verbose=true)
+    find_radial_distribution_function(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, dr::Float64, rmax::Float64; Ntasks::Int=1, verbose=true)
 
 Calculates the radial distribution function `g(r)` for a single-component simulation.
 
 This method defines the histogram bins by a fixed width `dr`.
 
 # Arguments
-- `s::SingleComponentSimulation`: The simulation data.
+- `s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}`: The simulation data.
 - `dr::Float64`: The width of the histogram bins.
 - `rmax::Float64`: The maximum distance to consider. If negative, it's set to half the smallest box dimension.
 - `Ntasks::Int=1`: The number of parallel tasks to use for the calculation.
@@ -218,7 +218,7 @@ This method defines the histogram bins by a fixed width `dr`.
 - `bin_centres::Vector{Float64}`: A vector of the centre points of the histogram bins.
 - `g_r::Vector{Float64}`: A vector containing the values of `g(r)`.
 """
-function find_radial_distribution_function(s::SingleComponentSimulation, dr::Float64, rmax; Ntasks=1, verbose=true)
+function find_radial_distribution_function(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, dr::Float64, rmax; Ntasks=1, verbose=true)
     if rmax < 0.0
         rmax = minimum(box_sizes)/2
     end

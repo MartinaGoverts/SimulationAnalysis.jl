@@ -1,3 +1,68 @@
+
+"""
+    read_SPV_simulation(filenamefull; dt_array=nothing, t1_t2_pair_array=nothing)
+
+reads the SPV simulation data from the specified file. If `dt_array` and `t1_t2_pair_array` are not provided, they will be automatically determined from the data.
+
+# Arguments
+    - `filenamefull::String`: Path to the simulation file.
+    - `dt_array`: The time step array.
+    - `t1_t2_pair_array`: The time pairs array.
+
+# Returns
+    - `SelfPropelledVoronoiSimulation`: A `SelfPropelledVoronoiSimulation` object.
+"""
+function read_SPV_simulation(filenamefull; dt_array=nothing, t1_t2_pair_array=nothing, original::Bool=false)
+    traj, params = SelfPropelledVoronoi.load_trajectory(filenamefull)
+    # traj contains fields:
+    # positions_trajectory::Vector{Vector{SVector{2, Float64}}}
+    # orientations_trajectory::Vector{Vector{Float64}}
+    # forces_trajectory::Vector{Vector{SVector{2, Float64}}}
+    # potential_energy_trajectory::Vector{Float64}
+    # areas_trajectory::Vector{Vector{Float64}}
+    # perimeters_trajectory::Vector{Vector{Float64}}
+    # steps_saved::Vector{Int64}
+    r = traj.positions_trajectory |> stack |> stack
+    u = traj.orientations_trajectory |> stack 
+    f = traj.forces_trajectory |> stack |> stack
+    Epot = traj.potential_energy_trajectory 
+    A = traj.areas_trajectory |> stack
+    P = traj.perimeters_trajectory |> stack
+    steps_saved = traj.steps_saved
+
+    dt = params.dt
+    dims = length(r[1][1])
+    t = steps_saved * dt
+    box_sizes = params.box.box_sizes
+    if dt_array === nothing && t1_t2_pair_array === nothing
+        dt_array, t1_t2_pair_array = find_allowed_dt_array(steps_saved::Vector{Int})
+        dt_array = dt_array * dt
+    end
+    N = size(r, 2)
+
+    if original
+        r = find_original_trajectories(r, box_sizes)
+    end
+
+    return SelfPropelledVoronoiSimulation(
+            N, 
+            dims,
+            length(t),
+            dt,
+            r,
+            u,
+            f,
+            P,
+            A,
+            Epot,
+            t,
+            box_sizes,
+            dt_array,
+            t1_t2_pair_array,
+            filenamefull
+        )
+end
+
 """
     read_WCA_simulation(filenamefull, dt; maxt=-1, every=1, original=false)
 
@@ -834,6 +899,51 @@ function find_allowed_t1_t2_pair_array_log_multstarts(t_array::Vector{Int}, N_st
             push!(tstart_arr, [it1, it2])
         end
         push!(t1_t2_pair_array, stack(tstart_arr)')
+    end
+    return dt_array, t1_t2_pair_array
+end
+
+
+
+"""
+    Find allowed time pairs for any time array.
+
+Loops through all pairs of times in the array and finds the time differences that are present in the array.
+
+# Arguments
+- `t_array`: The time array.
+
+# Returns
+- A vector of allowed time differences.
+- A vector of allowed time pairs for every dt.
+
+
+"""
+function find_allowed_dt_array(t_array::Vector{Int})
+    allowed_dt_array = Vector{Int}()
+
+    for t1 in t_array
+        for t2 in t_array
+            if t2 > t1
+                dt = t2 - t1
+                if dt in allowed_dt_array
+                    push!(allowed_dt_array, dt)
+                end
+            end
+        end
+    end
+
+    dt_array = sort(collect(unique(allowed_dt_array)))
+    t1_t2_pair_array = Vector{Array{Int64, 2}}()
+    for dt in dt_array
+        t1_t2s = Vector{Vector{Int64}}()
+        for t1 in t_array
+            t2 = t1 + dt
+            if t2 in t_array
+                push!(t1_t2s, [t1, t2])
+            end
+        end
+        push!(t1_t2_pair_array, stack(t1_t2s))
     end
     return dt_array, t1_t2_pair_array
 end

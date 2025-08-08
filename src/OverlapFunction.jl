@@ -1,5 +1,5 @@
 """
-    find_overlap_function(s::Simulation; a=0.5)
+    find_overlap_function(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}; a=0.5)
 
 Calculates the overlap function `Q(t)`.
 
@@ -9,14 +9,14 @@ where `θ` is the Heaviside step function, `a` is a cutoff distance, and the ave
 A value of 1 means the configurations are identical (within the cutoff), and a value of 0 means they are completely different.
 
 # Arguments
-- `s::Simulation`: The simulation data.
+- `s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}`: The simulation data.
 - `a::Float64=0.5`: The cutoff distance for calculating the overlap. Typically this is a fraction of the particle diameter.
 
 # Returns
 - `Fs::Vector{Float64}`: A vector containing `Q(t)` for each time delay `Δt` in `s.dt_array`.
 - `Fs_pp::Matrix{Float64}`: A `(Ndt, N)` matrix containing the overlap function for each particle.
 """
-function find_overlap_function(s; a=0.5)
+function find_overlap_function(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}; a=0.5)
     N = s.N
     Ndt = length(s.dt_array)
     box_sizes = s.box_sizes
