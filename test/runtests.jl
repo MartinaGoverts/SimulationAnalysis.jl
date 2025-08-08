@@ -9,7 +9,7 @@ file = joinpath(@__DIR__, "data", "test_trajectory.h5")
 # tests
 
 @testset "read trajectory" begin
-    traj = SimulationAnalysis.read_continuously_hard_sphere_simulation(file; original=false, velocities=false, forcestype=false, time_origins=10)
+    traj = SimulationAnalysis.read_simulation_Berthier(file; original=false, velocities=false, forcestype=false, time_origins=10)
 
     @test traj.N == 1000
     @test size(traj.r_array) == (3, 1000, 430) 
@@ -21,7 +21,7 @@ file = joinpath(@__DIR__, "data", "test_trajectory.h5")
 end
 
 @testset "KSpace" begin
-    traj = SimulationAnalysis.read_continuously_hard_sphere_simulation(file; original=false, velocities=false, forcestype=false, time_origins=10)
+    traj = SimulationAnalysis.read_simulation_Berthier(file; original=false, velocities=false, forcestype=false, time_origins=10)
 
     kspace = SimulationAnalysis.construct_k_space(traj, (0.0, 3.0); kfactor=1, negative=true, rectangular=false)
     kspace = SimulationAnalysis.construct_k_space(traj, (0.0, 3.0); kfactor=1, negative=true, rectangular=true)
@@ -45,13 +45,13 @@ end
 
 
 @testset "g(r)" begin
-    traj = SimulationAnalysis.read_continuously_hard_sphere_simulation(file; original=false, velocities=false, forcestype=false, time_origins=10)
+    traj = SimulationAnalysis.read_simulation_Berthier(file; original=false, velocities=false, forcestype=false, time_origins=10)
 
     gr =  SimulationAnalysis.find_radial_distribution_function(traj, 10,  10.0)
 end
 
 @testset "Neighborlists" begin
-    traj = SimulationAnalysis.read_continuously_hard_sphere_simulation(file; original=false, velocities=false, forcestype=false, time_origins=10)
+    traj = SimulationAnalysis.read_simulation_Berthier(file; original=false, velocities=false, forcestype=false, time_origins=10)
 
     neighborlists = @time SimulationAnalysis.find_absolute_distance_neighborlists(traj, 1.2)
 
@@ -77,7 +77,7 @@ end
 
 
 @testset "MSD" begin
-    traj = SimulationAnalysis.read_continuously_hard_sphere_simulation(file; original=false, velocities=false, forcestype=false, time_origins=10)
+    traj = SimulationAnalysis.read_simulation_Berthier(file; original=false, velocities=false, forcestype=false, time_origins=10)
 
     MSD = SimulationAnalysis.find_mean_squared_displacement(traj)
 
