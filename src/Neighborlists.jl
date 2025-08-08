@@ -12,7 +12,7 @@ This function requires the `D_array` (particle diameters) to be loaded in the `S
 # Arguments
 - `s::SingleComponentSimulation`: The simulation data. Must contain particle diameters.
 - `rc::Float64`: The relative cutoff distance.
-- `ζ::Float64=0.2`: A parameter to modulate the cutoff for particles of different sizes.
+- `ζ::Float64=0.2`: A non-additivity parameter to modulate the cutoff for particles of different sizes.
 
 # Returns
 - `neighborlists::Vector{Vector{Vector{Int}}}`: A vector over time steps. For each time step, a vector over particles, where `neighborlists[t][i]` contains the list of neighbors of particle `i`.
