@@ -3,7 +3,6 @@ module SimulationAnalysis
 import Base.show, Quickhull
 using HDF5, Polyester, Tullio, LoopVectorization, Base.Threads, Parsers, DelimitedFiles, Random, IfElse, Dierckx, ProgressMeter, OffsetArrays, ChunkSplitters, CellListMap, StaticArrays, Bessels
 using LinearAlgebra
-import SelfPropelledVoronoi
 
 export SingleComponentSimulation, MultiComponentSimulation, SelfPropelledVoronoiSimulation
 export KSpace, construct_k_space
