@@ -22,7 +22,7 @@ pkg> add "https://github.com/IlianPihlajamaa/SimulationAnalysis.jl"
 
 ## Usage
 
-Here is a basic example of how to use the package to load a simulation and calculate radial distribution function:
+Here is a basic example of how to use the package to load a simulation and calculate a radial distribution function:
 
 ```julia
 using SimulationAnalysis
