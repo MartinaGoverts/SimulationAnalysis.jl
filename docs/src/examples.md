@@ -18,7 +18,27 @@ filepath = joinpath(dirname(pathof(SimulationAnalysis)), "..", "test", "data", "
 # construct a Simulation object manually.
 sim = SimulationAnalysis.read_continuously_hard_sphere_simulation(filepath; time_origins=10)
 dt = sim.t_array[2] - sim.t_array[1]
+display(sim)
+println("The number of saved time frames is equal to $(length(sim.t_array)).")
 ```
+```
+This is a SingleComponentSimulation.
+It contains
+N: 1000
+Ndims: 3
+r_array: Array{Float64, 3}
+v_array: Array{Float64, 3}
+F_array: Array{Float64, 3}
+D_array: Vector{Float64}
+t_array: Vector{Float64}
+box_sizes: Vector{Float64}
+dt_array: Vector{Int64}
+t1_t2_pair_array: Vector{Matrix{Int64}}
+filepath: C:\Users\.julia\dev\SimulationAnalysis\src\..\test\data\test_trajectory.h5
+The number of saved time frames is equal to 430.
+```
+
+So as we can see, we have loaded a simulation object of 1000 particles with 430 saved frames, at the time points given by `t_array`.
 
 ---
 
@@ -58,8 +78,10 @@ These functions are used for analyzing the structure and dynamics in reciprocal 
 First, we need to construct the k-space vectors.
 
 ```julia
+# Use only wave vectors with a length between 0 and 10
+kbounds = (0.0, 10.0)
 # Construct the k-space vectors
-kspace = SimulationAnalysis.construct_k_space(sim, (0.0, 10.0); kfactor=1)
+kspace = SimulationAnalysis.construct_k_space(sim, kbounds)
 ```
 ```
 This is a SimulationAnalysis.KSpace{3, SimulationAnalysis.SingleComponentSimulation, OffsetArrays.OffsetArray{Int64, 3, Array{Int64, 3}}}.
@@ -71,7 +93,9 @@ k_array: Matrix{Float64}
 kfactor: 1
 cartesian_to_linear: OffsetArrays.OffsetArray{Int64, 3, Array{Int64, 3}}
 ```
-We can compute the corresponding density modes:
+We can compute the corresponding density modes. These are used to construct scattering functions. They are defines as
+$\rho(k,t)=\sum_j \exp(i \mathbf{k}\cdot\mathbf{r}_j),$
+where the index $j$ runs over all particles.
 ```julia
 density_modes = SimulationAnalysis.find_density_modes(sim, kspace; verbose=false)
 ```
@@ -84,7 +108,7 @@ SingleComponentDensityModes with real and imaginary parts of size (430, 2418).
 The structure factor is the Fourier transform of the radial distribution function and describes the static correlations in the system.
 
 ```julia
-# Calculate the structure factor for a specific k-range
+# Calculate the structure factor averaged over a specific shell in kspace
 S_k = SimulationAnalysis.find_structure_factor(sim; kmin=2.0, kmax=2.4)
 
 println("Structure factor calculated: ", S_k)
@@ -106,6 +130,7 @@ plot(k_sample_arr, S_k,
     lw=2
 )
 ```
+The code above computes the structure factor for each $k_i$ in `k_sample_arr`, averaged over all `k\in (k_i - k_binwidth/2, k_i + k_binwidth/2)`. It produces the following plot:
 
 ![Sk](plots/Sk.png)
 
@@ -133,6 +158,8 @@ plot(dt * sim.dt_array[2:end], isf[2:end],
 )
 ```
 ![Fkt](plots/Fkt.png)
+
+We could have used the precomputed density modes for performance here, see the API documentation.
 
 ### Self-Intermediate Scattering Function (Self-ISF)
 
@@ -178,7 +205,7 @@ Absolute distance neighbor lists calculated for 430 time steps.
 
 This method uses Voronoi tessellation to determine neighbors. 
 
-THIS IS CURRENTLY BROKEN ON JULIA 1.11 (QUICKHULL.jl segfaults)
+THIS IS CURRENTLY BROKEN IN 3D ON JULIA 1.11 (Quickhull.jl segfaults)
 
 ```julia
 # Find neighbor lists using Voronoi tessellation
@@ -196,7 +223,7 @@ Voronoi neighbor lists calculated for 430 time steps.
 The bond correlation function is used to study the dynamics of local structure. It requires neighbor lists as input.
 
 ```julia
-# First, calculate neighbor lists (e.g., Voronoi)
+# First, calculate neighbor lists
 neighborlists = SimulationAnalysis.find_absolute_distance_neighborlists(sim, 2.0)
 
 # Calculate the bond correlation function for each particle
@@ -208,7 +235,7 @@ Cb = sum(Cb_per_particle, dims=2)[:] / size(Cb_per_particle, 2)
 plot(dt*sim.dt_array[2:end], Cb[2:end],
     xlabel="Time",
     ylabel="Cb(t)",
-    title="Bond Correlation Function (Particle 1)",
+    title="Bond Correlation Function",
     legend=false,
     lw=2,
     xscale=:log10
