@@ -36,7 +36,7 @@ Nbins = 100
 rmax = 5.0
 
 # Calculate the radial distribution function
-r, g_r = SimulationAnalysis.find_radial_distribution_function(sim, Nbins, rmax)
+r, g_r = SimulationAnalysis.find_radial_distribution_function(simulation, Nbins, rmax)
 
 using Plots
 # Plot the g(r)
