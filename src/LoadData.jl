@@ -518,9 +518,9 @@ function read_monodisperse_hard_sphere_simulation(filename; original=false, velo
 end
 
 """
-    read_continuously_hard_sphere_simulation(filename; original=false, velocities=false, forcestype=false, time_origins="quasilog")
+    read_simulation_Berthier(filename; original=false, velocities=false, forcestype=false, time_origins="quasilog")
 
-Read a simulation of continuously polydisperse particles. The file was generated with SimulationCode.jl.
+Read a simulation of the polydisperse system by Berthier. The file was generated with SimulationCode.jl.
 
 # Arguments
 - `filename::String`: Path to the simulation file.
@@ -532,7 +532,7 @@ Read a simulation of continuously polydisperse particles. The file was generated
 # Returns
 - `SingleComponentSimulation`: A `SingleComponentSimulation` object.
 """
-function read_continuously_hard_sphere_simulation(filename; original=false, velocities=false, forcestype=false, time_origins="quasilog")
+function read_simulation_Berthier(filename; original=false, velocities=false, forcestype=false, time_origins="quasilog")
     println("Reading data file")
     f = h5open(filename)
     saved_at_times = sort(parse.(Int64, keys(f["positions"])))

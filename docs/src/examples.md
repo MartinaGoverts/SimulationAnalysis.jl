@@ -16,7 +16,7 @@ filepath = joinpath(dirname(pathof(SimulationAnalysis)), "..", "test", "data", "
 # Load the simulation into a SingleComponentSimulation object
 # If you have access to the data in some other format, you need to 
 # construct a Simulation object manually.
-sim = SimulationAnalysis.read_continuously_hard_sphere_simulation(filepath; time_origins=10)
+sim = SimulationAnalysis.read_simulation_Berthier(filepath; time_origins=10)
 display(sim)
 ```
 ```
@@ -249,7 +249,7 @@ plot(sim.dt_array[2:end], Cb[2:end],
 The mean squared displacement is a measure of the average distance a particle travels over time. By default, the particles are stored as mapped into the main box. Therefore we need to reconstruct the data with the original trajectories.
 ```julia
 # Calculate the mean squared displacement
-sim_original = SimulationAnalysis.read_continuously_hard_sphere_simulation(filepath;
+sim_original = SimulationAnalysis.read_simulation_Berthier(filepath;
              time_origins=10, original=true)
 msd = SimulationAnalysis.find_mean_squared_displacement(sim_original)
 

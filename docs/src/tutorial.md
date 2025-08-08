@@ -25,7 +25,7 @@ filepath = joinpath(dirname(pathof(SimulationAnalysis)), "..", "test", "data", "
 
 # Load the simulation data
 # We specify the number of time origins to use for time correlation functions.
-sim = SimulationAnalysis.read_continuously_hard_sphere_simulation(filepath; time_origins=10)
+sim = SimulationAnalysis.read_simulation_Berthier(filepath; time_origins=10)
 ```
 
 The `sim` object now holds all the simulation data, including particle positions, box dimensions, and time steps. If you have access to data in a different format, you need to construct a Simulation object manually.
