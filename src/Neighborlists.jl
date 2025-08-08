@@ -17,7 +17,7 @@ This function requires the `D_array` (particle diameters) to be loaded in the `S
 # Returns
 - `neighborlists::Vector{Vector{Vector{Int}}}`: A vector over time steps. For each time step, a vector over particles, where `neighborlists[t][i]` contains the list of neighbors of particle `i`.
 """
-function find_relative_distance_neighborlists(s, rc; ζ = 0.2)
+function find_relative_distance_neighborlists(s::SingleComponentSimulation, rc; ζ = 0.2)
     r_array = s.r_array
     D_array = s.D_array
     Nt = size(r_array, 3)
@@ -75,15 +75,14 @@ Two particles `i` and `j` are considered neighbors if the distance between them 
 Periodic boundary conditions are taken into account.
 
 # Arguments
-- `s::Simulation`: The simulation data.
+- `s::SingleComponentSimulation`: The simulation data.
 - `rc::Float64`: The absolute cutoff distance.
 
 # Returns
 - `neighborlists::Vector{Vector{Vector{Int}}}`: A vector over time steps. For each time step, a vector over particles, where `neighborlists[t][i]` contains the list of neighbors of particle `i`.
 """
-function find_absolute_distance_neighborlists(s, rc)
+function find_absolute_distance_neighborlists(s::SingleComponentSimulation, rc)
     r_array = s.r_array
-    D_array = s.D_array
     Nt = size(r_array, 3)
     N = size(r_array, 2)
     rc2 = rc^2
@@ -212,7 +211,7 @@ end
 
 
 """
-    find_voronoi_neighborlists(s::Simulation; max_distance_from_boundary=3.0, verbose=true, indices=eachindex(s.t_array))
+    find_voronoi_neighborlists(s::SingleComponentSimulation; max_distance_from_boundary=3.0, verbose=true, indices=eachindex(s.t_array))
 
 Computes neighbor lists based on Voronoi tessellation for each time step.
 
@@ -220,7 +219,7 @@ Two particles are considered neighbors if their Voronoi cells are adjacent (i.e.
 This method uses the `Quickhull.jl` package to perform the Delaunay triangulation, which is the dual of the Voronoi tessellation.
 
 # Arguments
-- `s::Simulation`: The simulation data.
+- `s::SingleComponentSimulation`: The simulation data.
 - `max_distance_from_boundary::Float64=3.0`: How far from the central box to consider periodic images for the tessellation. This should be large enough to avoid boundary effects.
 - `verbose::Bool=true`: If `true`, prints progress information.
 - `indices=eachindex(s.t_array)`: The range of time step indices to analyze. Defaults to all time steps.
@@ -228,7 +227,7 @@ This method uses the `Quickhull.jl` package to perform the Delaunay triangulatio
 # Returns
 - `neighborlists::Vector{Vector{Vector{Int}}}`: A vector over time steps. For each time step, a vector over particles, where `neighborlists[t][i]` contains the list of neighbors of particle `i`.
 """
-function find_voronoi_neighborlists(s; max_distance_from_boundary=3.0, verbose=true, indices=eachindex(s.t_array))
+function find_voronoi_neighborlists(s::SingleComponentSimulation; max_distance_from_boundary=3.0, verbose=true, indices=eachindex(s.t_array))
     dims = size(s.r_array, 1)
     if dims == 2
         return find_voronoi_neighborlists(s, Val{2}(), max_distance_from_boundary, verbose, indices)

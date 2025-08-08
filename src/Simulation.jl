@@ -10,7 +10,7 @@ A mutable struct that holds all data for a single-component particle simulation.
 - `r_array::Array{Float64, 3}`: Particle positions. The dimensions of the array are `(N, Ndims, N_time_steps)`.
 - `v_array::Array{Float64, 3}`: Particle velocities. The dimensions of the array are `(N, Ndims, N_time_steps)`.
 - `F_array::Array{Float64, 3}`: Forces on particles. The dimensions of the array are `(N, Ndims, N_time_steps)`.
-- `D_array::Array{Float64, 1}`: Diffusion coefficient for each particle.
+- `D_array::Array{Float64, 1}`: Diameter for each particle.
 - `t_array::Array{Float64, 1}`: Vector of time points corresponding to each time step.
 - `box_sizes::Vector{Float64}`: A vector holding the simulation box dimensions, e.g., `[Lx, Ly, Lz]`.
 - `dt_array::Array{Int64, 1}`: An array of time step differences (`Δt`) used for calculating time correlation functions.
