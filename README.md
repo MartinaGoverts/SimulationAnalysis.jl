@@ -22,20 +22,28 @@ pkg> add "https://github.com/IlianPihlajamaa/SimulationAnalysis.jl"
 
 ## Usage
 
-Here is a basic example of how to use the package to load a simulation and calculate the mean squared displacement:
+Here is a basic example of how to use the package to load a simulation and calculate radial distribution function:
 
 ```julia
-using SimulationAnalysis
+using  SimulationAnalysis
+# Set parameters for g(r) calculation
+Nbins = 100
+rmax = 5.0
 
-# Load simulation data
-file = joinpath("test", "data", "test_trajectory.h5")
-simulation = SimulationAnalysis.read_continuously_hard_sphere_simulation(file; time_origins=10)
+# Calculate the radial distribution function
+r, g_r = SimulationAnalysis.find_radial_distribution_function(sim, Nbins, rmax)
 
-# Calculate the mean squared displacement
-msd = find_mean_squared_displacement(simulation)
-
-println("Mean Squared Displacement:")
-println(msd)
+using Plots
+# Plot the g(r)
+plot(r, g_r,
+    xlabel="r",
+    ylabel="g(r)",
+    title="Radial Distribution Function",
+    legend=false,
+    lw=2
+)
 ```
+
+![gr](docs/src/plots/gr.png)
 
 For more detailed information and a complete list of features, please see the [documentation](https://IlianPihlajamaa.github.io/SimulationAnalysis.jl/dev).
