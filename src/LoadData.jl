@@ -1,19 +1,21 @@
 
 """
-    read_SPV_simulation(filenamefull; dt_array=nothing, t1_t2_pair_array=nothing)
+    read_SPV_simulation(traj, params; dt_array=nothing, t1_t2_pair_array=nothing)
 
 reads the SPV simulation data from the specified file. If `dt_array` and `t1_t2_pair_array` are not provided, they will be automatically determined from the data.
+see SelfPropelledVoronoi.jl
 
 # Arguments
-    - `filenamefull::String`: Path to the simulation file.
+    - `traj`: The trajectory data for SelfPropelledVoronoi.jl
+    - `params`: The parameters for the simulation from SelfPropelledVoronoi.jl
     - `dt_array`: The time step array.
     - `t1_t2_pair_array`: The time pairs array.
 
 # Returns
     - `SelfPropelledVoronoiSimulation`: A `SelfPropelledVoronoiSimulation` object.
 """
-function read_SPV_simulation(filenamefull; dt_array=nothing, t1_t2_pair_array=nothing, original::Bool=false)
-    traj, params = SelfPropelledVoronoi.load_trajectory(filenamefull)
+function read_SPV_simulation(traj, params; dt_array=nothing, t1_t2_pair_array=nothing, original::Bool=false)
+    # traj, params = SelfPropelledVoronoi.load_trajectory(filenamefull)
     # traj contains fields:
     # positions_trajectory::Vector{Vector{SVector{2, Float64}}}
     # orientations_trajectory::Vector{Vector{Float64}}
