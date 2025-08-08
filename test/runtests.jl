@@ -83,3 +83,16 @@ end
 
     @test length(MSD) == length(traj.dt_array)
 end
+
+
+@testset "SPV" begin
+    sim = read_SPV_simulation("mydata.h5")
+
+    # Set parameters for g(r) calculation
+    Nbins = 100
+    rmax = 5.0
+
+    # Calculate the radial distribution function
+    bin_centres, g_r = SimulationAnalysis.find_radial_distribution_function(sim, Nbins, rmax)
+    @test all(isfinite.(g_r))
+end
