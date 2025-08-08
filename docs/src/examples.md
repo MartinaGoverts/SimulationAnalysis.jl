@@ -79,7 +79,7 @@ First, we need to construct the k-space vectors.
 
 ```julia
 # Use only wave vectors with a length between 0 and 10
-kbounds = (0.0, 10.0)
+kbounds = (0.0, 20.0)
 # Construct the k-space vectors
 kspace = SimulationAnalysis.construct_k_space(sim, kbounds)
 ```
@@ -97,7 +97,7 @@ We can compute the corresponding density modes. These are used to construct scat
 $\rho(k,t)=\sum_j \exp(i \mathbf{k}\cdot\mathbf{r}_j),$
 where the index $j$ runs over all particles.
 ```julia
-density_modes = SimulationAnalysis.find_density_modes(sim, kspace; verbose=false)
+density_modes = SimulationAnalysis.find_density_modes(sim, kspace; verbose=true)
 ```
 ```
 SingleComponentDensityModes with real and imaginary parts of size (430, 2418).
@@ -120,7 +120,7 @@ Structure factor calculated: 0.12698982578981327
 If the goal is to compute S(k) at many different points in k, it is more efficient to use the precomputed density modes from above
 ```julia
 # Calculate the structure factor for a specific k-range
-k_sample_arr = 2:0.3:10
+k_sample_arr = 2:0.3:20
 S_k = SimulationAnalysis.find_structure_factor(sim, kspace, density_modes, k_sample_arr; k_binwidth=0.1)
 plot(k_sample_arr, S_k,
     xlabel="k ",
