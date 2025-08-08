@@ -12,12 +12,12 @@ file = joinpath(@__DIR__, "data", "test_trajectory.h5")
     traj = SimulationAnalysis.read_continuously_hard_sphere_simulation(file; original=false, velocities=false, forcestype=false, time_origins=10)
 
     @test traj.N == 1000
-    @test size(traj.r_array) == (2, 1000, 738)
+    @test size(traj.r_array) == (3, 1000, 430) 
     @test size(traj.v_array) == (1, 1, 1)
     @test size(traj.F_array) == (1, 1, 1)
 
     @test size(traj.D_array) == (1000, )
-    @test size(traj.t_array) == (738, )
+    @test size(traj.t_array) == (430, )
 end
 
 @testset "KSpace" begin
@@ -55,14 +55,14 @@ end
 
     neighborlists = @time SimulationAnalysis.find_absolute_distance_neighborlists(traj, 1.2)
 
-    @test length(neighborlists) == 738
+    @test length(neighborlists) == 430
 
     @test length(neighborlists[1]) == 1000
 
 
     neighborlists = @time SimulationAnalysis.find_voronoi_neighborlists(traj)
 
-    @test length(neighborlists) == 738
+    @test length(neighborlists) == 430
 
     @test length(neighborlists[1]) == 1000
 
@@ -71,7 +71,7 @@ end
 
     Cb = SimulationAnalysis.find_CB(traj, neighborlists, neighborlists)
 
-    @test size(Cb) == (78, 1000)
+    @test size(Cb) == (47, 1000)
 
 end
 
