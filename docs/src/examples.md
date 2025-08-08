@@ -34,7 +34,7 @@ t_array: Vector{Float64}
 box_sizes: Vector{Float64}
 dt_array: Vector{Int64}
 t1_t2_pair_array: Vector{Matrix{Int64}}
-filepath: C:\Users\.julia\dev\SimulationAnalysis\src\..\test\data\test_trajectory.h5
+filepath: C:\Users\Me\.julia\dev\SimulationAnalysis\src\..\test\data\test_trajectory.h5
 The number of saved time frames is equal to 430.
 ```
 
