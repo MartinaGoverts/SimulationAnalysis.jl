@@ -267,3 +267,24 @@ plot(sim.dt_array[2:end], msd[2:end],
 ![MSD](plots/msd.png)
 
 ---
+
+## Non-Gaussian parameter ($\alpha_2$)
+
+The non-Gaussian parameter is a measure of the non-Gaussianity in the system. It is defined as
+$\alpha_2(t) = \frac{d}{d+2}\frac{MQD(t)}{MSD(t)^2}-1$
+where $MQD$ is the mean quartic displacement (fourth moment of the displacement distribution) and $d$ is the dimensionality.
+```julia
+a2 = SimulationAnalysis.find_non_gaussian_parameter(sim_original)
+
+# Plot the MSD
+plot(sim.dt_array[2:end], a2[2:end],
+    xlabel="Time",
+    ylabel="alpha_2(t)",
+    legend=false,
+    lw=2,
+    xscale=:log10,
+)
+```
+![MSD](plots/alpha2.png)
+
+---

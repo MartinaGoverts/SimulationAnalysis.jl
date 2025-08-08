@@ -58,6 +58,7 @@ SimulationAnalysis.find_structure_factor
 
 ```@docs
 SimulationAnalysis.find_mean_squared_displacement
+SimulationAnalysis.find_non_gaussian_parameter
 ```
 
 ## Overlap Function

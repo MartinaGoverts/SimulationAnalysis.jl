@@ -9,7 +9,7 @@ export KSpace, construct_k_space
 export find_density_modes, SingleComponentDensityModes, MultiComponentDensityModes
 export find_intermediate_scattering_function, find_self_intermediate_scattering_function
 export find_structure_factor
-export find_mean_squared_displacement
+export find_mean_squared_displacement, find_non_gaussian_parameter
 export find_overlap_function
 export find_relative_distance_neighborlists, find_absolute_distance_neighborlists, find_voronoi_neighborlists
 export find_CB
