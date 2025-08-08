@@ -25,7 +25,12 @@ pkg> add "https://github.com/IlianPihlajamaa/SimulationAnalysis.jl"
 Here is a basic example of how to use the package to load a simulation and calculate radial distribution function:
 
 ```julia
-using  SimulationAnalysis
+using SimulationAnalysis
+
+# Load simulation data
+file = joinpath("test", "data", "test_trajectory.h5")
+simulation = SimulationAnalysis.read_continuously_hard_sphere_simulation(file; time_origins=10)
+
 # Set parameters for g(r) calculation
 Nbins = 100
 rmax = 5.0
