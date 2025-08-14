@@ -14,7 +14,7 @@ Pkg.add("Plots")
 
 ## 2. Loading Simulation Data
 
-`SimulationAnalysis.jl` supports various simulation formats. In this tutorial, we'll use a sample trajectory file included with the package. We will use the `read_continuously_hard_sphere_simulation` function to load the data into a `SingleComponentSimulation` object.
+`SimulationAnalysis.jl` supports various simulation formats. In this tutorial, we'll use a sample trajectory file included with the package. We will use the `read_simulation_Berthier` function to load the data into a `SingleComponentSimulation` object.
 
 ```julia
 using SimulationAnalysis
