@@ -6,6 +6,8 @@
 ```@docs
 SimulationAnalysis.SingleComponentSimulation
 SimulationAnalysis.MultiComponentSimulation
+SimulationAnalysis.SelfPropelledVoronoiSimulation
+SimulationAnalysis.MCSPVSimulation
 ```
 
 ## K-Space
