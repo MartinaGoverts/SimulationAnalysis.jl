@@ -112,3 +112,47 @@ struct SelfPropelledVoronoiSimulation <: Simulation
     t1_t2_pair_array::Vector{Array{Int64, 2}}
     filepath::String
 end
+
+"""
+    MCSPVSimulation
+
+A mutable struct that holds all data for a multi-component self-propelled Voronoi particle simulation.
+
+# Fields
+- `N::Int64`: Number of particles.
+- `Ndims::Int64`: Number of spatial dimensions.
+- `N_species::Int64`: Number of different particle species.
+- `Nt::Int64`: Number of time steps.
+- `dt::Float64`: Time step size.
+- `N_particles_per_species::Vector{Int}`: A vector containing the number of particles for each species.
+- `r_array::Vector{Array{Float64, 3}}`: A vector of particle position arrays. Each element `r_array[i]` is a `(N_particles_per_species[i], Ndims, N_time_steps)` array for species `i`.
+- `u_array::Vector{Array{Float64, 2}}`: A vector of particle orientation arrays for each species.
+- `F_array::Vector{Array{Float64, 3}}`: A vector of particle force arrays for each species.
+- `perimeter_array::Vector{Array{Float64, 2}}`: A vector of Voronoi cell perimeter arrays for each species.
+- `area_array::Vector{Array{Float64, 2}}`: A vector of Voronoi cell area arrays for each species.
+- `Epot_array::Vector{Array{Float64, 1}}`: A vector of potential energy arrays for each species.
+- `t_array::Vector{Float64}`: Vector of time points corresponding to each time step.
+- `box_sizes::Vector{Float64}`: A vector holding the simulation box dimensions, e.g., `[Lx, Ly, Lz]`.
+- `dt_array::Vector{Float64}`: An array of time step differences (`Δt`) used for calculating time correlation functions.
+- `t1_t2_pair_array::Vector{Array{Int64, 2}}`: An array of `(t1, t2)` index pairs, used for efficient calculation of time correlations.
+- `filepath::String`: Path to the file from which the simulation data was loaded.
+"""
+struct MCSPVSimulation <: Simulation
+    N::Int64
+    Ndims::Int64
+    N_species::Int64
+    Nt::Int64
+    dt::Float64
+    N_particles_per_species::Vector{Int}
+    r_array::Vector{Array{Float64, 3}}
+    u_array::Vector{Array{Float64, 2}}
+    F_array::Vector{Array{Float64, 3}}
+    perimeter_array::Vector{Array{Float64, 2}}
+    area_array::Vector{Array{Float64, 2}}
+    Epot_array::Vector{Array{Float64, 1}}
+    t_array::Vector{Float64}
+    box_sizes::Vector{Float64}
+    dt_array::Vector{Float64}
+    t1_t2_pair_array::Vector{Array{Int64, 2}}
+    filepath::String
+end

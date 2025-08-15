@@ -76,7 +76,7 @@ function find_intermediate_scattering_function(s::Union{SingleComponentSimulatio
 end
 
 """
-    find_intermediate_scattering_function(s::MultiComponentSimulation, kspace::KSpace, ρkt::MultiComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
+    find_intermediate_scattering_function(s::Union{MultiComponentSimulation,MCSPVSimulation}, kspace::KSpace, ρkt::MultiComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
 
 Calculates the partial intermediate scattering functions `F_αβ(k, t)` for a multi-component simulation.
 
@@ -84,7 +84,7 @@ This function computes `F_αβ(k, t) = (1/N) * <ρ_α(k, t) ρ_β*(-k, 0)>` by c
 The average is performed over time origins and k-vectors within the magnitude range `[kmin, kmax]`.
 
 # Arguments
-- `s::MultiComponentSimulation`: The simulation data.
+- `s::Union{MultiComponentSimulation,MCSPVSimulation}`: The simulation data.
 - `kspace::KSpace`: The pre-computed k-space.
 - `ρkt::MultiComponentDensityModes`: The pre-computed density modes for all species.
 - `kmin::Float64=0.0`: The minimum magnitude of k-vectors to include in the average.
@@ -93,7 +93,7 @@ The average is performed over time origins and k-vectors within the magnitude ra
 # Returns
 - `Fk::Matrix{Vector{Float64}}`: A matrix of vectors, where `Fk[α, β]` is the partial intermediate scattering function `F_αβ(k, t)`.
 """
-function find_intermediate_scattering_function(s::MultiComponentSimulation, kspace::KSpace, ρkt::MultiComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
+function find_intermediate_scattering_function(s::Union{MultiComponentSimulation,MCSPVSimulation}, kspace::KSpace, ρkt::MultiComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
     N_species = s.N_species
     Ndt = length(s.dt_array)
     Fk = [zeros(Ndt) for α=1:N_species, β=1:N_species]

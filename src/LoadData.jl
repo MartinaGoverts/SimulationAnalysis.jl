@@ -10,6 +10,7 @@ see SelfPropelledVoronoi.jl
     - `params`: The parameters for the simulation from SelfPropelledVoronoi.jl
     - `dt_array`: The time step array.
     - `t1_t2_pair_array`: The time pairs array.
+    - `original::Bool=false`: Whether to reconstruct the original trajectories.
 
 # Returns
     - `SelfPropelledVoronoiSimulation`: A `SelfPropelledVoronoiSimulation` object.
@@ -64,6 +65,108 @@ function read_SPV_simulation(traj, params; dt_array=nothing, t1_t2_pair_array=no
             filenamefull
         )
 end
+
+
+"""
+    read_SPV_simulation_multicomponent(traj, params, species::Vector{Int}; dt_array=nothing, t1_t2_pair_array=nothing, original::Bool=false)
+
+reads the SPV simulation data from the specified file. If `dt_array` and `t1_t2_pair_array` are not provided, they will be automatically determined from the data. 
+Returns a multicomponent simulation object, where the species are specified by the `species` vector.
+see SelfPropelledVoronoi.jl
+
+# Arguments
+    - `traj`: The trajectory data for SelfPropelledVoronoi.jl
+    - `params`: The parameters for the simulation from SelfPropelledVoronoi.jl
+    - `species::Vector{Int}`: A vector specifying the species of the particles.
+    - `dt_array`: The time step array.
+    - `t1_t2_pair_array`: The time pairs array.
+    - `original::Bool=false`: Whether to reconstruct the original trajectories.
+
+
+# Returns
+    - `SelfPropelledVoronoiSimulation`: A `MulticomponentSelfPropelledVoronoiSimulation` object.
+"""
+function read_SPV_simulation_multicomponent(traj, params, species::Vector{Int}; dt_array=nothing, t1_t2_pair_array=nothing, original::Bool=false)
+    # traj, params = SelfPropelledVoronoi.load_trajectory(filenamefull)
+    # traj contains fields:
+    # positions_trajectory::Vector{Vector{SVector{2, Float64}}}
+    # orientations_trajectory::Vector{Vector{Float64}}
+    # forces_trajectory::Vector{Vector{SVector{2, Float64}}}
+    # potential_energy_trajectory::Vector{Float64}
+    # areas_trajectory::Vector{Vector{Float64}}
+    # perimeters_trajectory::Vector{Vector{Float64}}
+    # steps_saved::Vector{Int64}
+    r = traj.positions_trajectory |> stack |> stack
+    u = traj.orientations_trajectory |> stack 
+    f = traj.forces_trajectory |> stack |> stack
+    Epot = traj.potential_energy_trajectory 
+    A = traj.areas_trajectory |> stack
+    P = traj.perimeters_trajectory |> stack
+    steps_saved = traj.steps_saved
+
+    dt = params.dt
+    dims = length(r[1][1])
+    t = steps_saved * dt
+    box_sizes = params.box.box_sizes
+    if dt_array === nothing && t1_t2_pair_array === nothing
+        dt_array, t1_t2_pair_array = find_allowed_dt_array(steps_saved::Vector{Int})
+        dt_array = dt_array * dt
+    end
+    N = size(r, 2)
+
+    if original
+        r = find_original_trajectories(r, box_sizes)
+    end
+
+
+    # group by species
+
+    # ensure species is a vector of integers, containing consequtive integers starting from 1
+    if minimum(species) != 1 || maximum(species) != length(unique(species))
+        error("Species vector must contain consecutive integers starting from 1.")
+    end
+    N_species = maximum(species)
+    N_particles_per_species = [sum(species .== i) for i in 1:N_species]
+    rvec = Array{Array{Float64, 3}, 1}(undef, N_species)
+    uvec = Array{Array{Float64, 2}, 1}(undef, N_species)
+    fvec = Array{Array{Float64, 3}, 1}(undef, N_species)
+    Avec = Array{Array{Float64, 2}, 1}(undef, N_species)
+    Pvec = Array{Array{Float64, 2}, 1}(undef, N_species)
+    Epotvec = Array{Float64, 1}(undef, N_species)
+    for i in 1:N_species
+        indices = findall(species .== i)
+        rvec[i] = r[:, indices, :]
+        uvec[i] = u[indices, :]
+        fvec[i] = f[:, indices, :]
+        Avec[i] = A[indices, :]
+        Pvec[i] = P[indices, :]
+        Epotvec[i] = Epot[indices]
+    end
+
+    return MCSPVSimulation(
+            N, 
+            dims,
+            N_species,
+            length(t),
+            dt,
+            N_particles_per_species,
+            rvec,
+            uvec,
+            fvec,
+            Pvec,
+            Avec,
+            Epotvec,
+            t,
+            box_sizes,
+            dt_array,
+            t1_t2_pair_array,
+            filenamefull
+        )
+end
+
+
+
+
 
 """
     read_WCA_simulation(filenamefull, dt; maxt=-1, every=1, original=false)

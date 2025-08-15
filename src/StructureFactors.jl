@@ -106,7 +106,7 @@ end
 
 
 """
-    find_structure_factor(s::MultiComponentSimulation, kspace::KSpace, ρkt::MultiComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
+    find_structure_factor(s::Union{MultiComponentSimulation,MCSPVSimulation}, kspace::KSpace, ρkt::MultiComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
 
 Calculates the partial static structure factors `S_αβ(k)` for a multi-component simulation.
 
@@ -114,7 +114,7 @@ This function computes `S_αβ(k) = (1/N) * <ρ_α(k) ρ_β*(-k)>` from the pre-
 The average is performed over time and k-vectors within the magnitude range `[kmin, kmax]`.
 
 # Arguments
-- `s::MultiComponentSimulation`: The simulation data.
+- `s::Union{MultiComponentSimulation,MCSPVSimulation}`: The simulation data.
 - `kspace::KSpace`: The pre-computed k-space.
 - `ρkt::MultiComponentDensityModes`: The pre-computed density modes for all species.
 - `kmin::Float64=0.0`: The minimum magnitude of k-vectors to include in the average.
@@ -123,7 +123,7 @@ The average is performed over time and k-vectors within the magnitude range `[km
 # Returns
 - `Sk::Matrix{Float64}`: A matrix where `Sk[α, β]` is the partial structure factor `S_αβ(k)`.
 """
-function find_structure_factor(s::MultiComponentSimulation, kspace::KSpace, ρkt::MultiComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
+function find_structure_factor(s::Union{MultiComponentSimulation,MCSPVSimulation}, kspace::KSpace, ρkt::MultiComponentDensityModes; kmin=0.0, kmax=10.0^10.0)
     N_species = s.N_species
     Sk = zeros(N_species, N_species)
     for α=1:N_species

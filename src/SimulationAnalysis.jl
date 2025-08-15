@@ -4,7 +4,7 @@ import Base.show, Quickhull
 using HDF5, Polyester, Tullio, LoopVectorization, Base.Threads, Parsers, DelimitedFiles, Random, IfElse, Dierckx, ProgressMeter, OffsetArrays, ChunkSplitters, CellListMap, StaticArrays, Bessels
 using LinearAlgebra
 
-export SingleComponentSimulation, MultiComponentSimulation, SelfPropelledVoronoiSimulation
+export SingleComponentSimulation, MultiComponentSimulation, SelfPropelledVoronoiSimulation, MCSPVSimulation
 export KSpace, construct_k_space
 export find_density_modes, SingleComponentDensityModes, MultiComponentDensityModes
 export find_intermediate_scattering_function, find_self_intermediate_scattering_function

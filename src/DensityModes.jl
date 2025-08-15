@@ -62,7 +62,7 @@ This function is computationally intensive. The `verbose` option can be used to 
 # Returns
 - `SingleComponentDensityModes`: A struct containing the real and imaginary parts of the density modes.
 
-See also: [`SingleComponentDensityModes`](@ref), [`find_density_modes(::MultiComponentSimulation, ::KSpace)`](@ref)
+See also: [`SingleComponentDensityModes`](@ref), [`find_density_modes(::Union{MultiComponentSimulation,MCSPVSimulation}, ::KSpace)`](@ref)
 """
 function find_density_modes(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, kspace::KSpace; verbose=true)
     Ndim, N, N_timesteps = size(s.r_array)
@@ -85,7 +85,7 @@ function find_density_modes(s::Union{SingleComponentSimulation, SelfPropelledVor
 end
 
 """
-    find_density_modes(s::MultiComponentSimulation, kspace::KSpace; verbose=true)
+    find_density_modes(s::Union{MultiComponentSimulation,MCSPVSimulation}, kspace::KSpace; verbose=true)
 
 Calculates the density modes `ρ_s(k,t) = Σ_j exp(i * k ⋅ r_j(t))` for each species `s` in a multi-component simulation.
 
@@ -93,7 +93,7 @@ The calculation is performed for all k-vectors in `kspace` and for all time step
 This function is computationally intensive. The `verbose` option can be used to monitor progress.
 
 # Arguments
-- `s::MultiComponentSimulation`: The simulation data.
+- `s::Union{MultiComponentSimulation,MCSPVSimulation}`: The simulation data.
 - `kspace::KSpace`: The k-space vectors for which to calculate the density modes.
 - `verbose::Bool=true`: If `true`, prints progress and performance information to the console.
 
@@ -102,7 +102,7 @@ This function is computationally intensive. The `verbose` option can be used to 
 
 See also: [`MultiComponentDensityModes`](@ref), [`find_density_modes(::SingleComponentSimulation, ::KSpace)`](@ref)
 """
-function find_density_modes(s::MultiComponentSimulation, kspace::KSpace; verbose=true)
+function find_density_modes(s::Union{MultiComponentSimulation,MCSPVSimulation}, kspace::KSpace; verbose=true)
     N_species = length(s.r_array)
     Nk = kspace.Nk
     N_timesteps = size(s.r_array[1], 3)

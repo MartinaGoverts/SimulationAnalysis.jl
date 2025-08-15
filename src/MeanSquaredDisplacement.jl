@@ -1,12 +1,12 @@
 """
-    find_mean_squared_displacement(simulation::Simulation; per_particle=false)
+    find_mean_squared_displacement(simulation::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}; per_particle=false)
 
 Calculates the mean squared displacement (MSD) for a given simulation.
 
 The MSD is defined as `<|r(t) - r(0)|^2>`, where the average is taken over all particles and time origins.
 
 # Arguments
-- `simulation::Simulation`: The simulation data.
+- `simulation::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}`: The simulation data.
 - `per_particle::Bool=false`: If `true`, the function returns the MSD calculated for each particle individually, in addition to the total MSD.
 - `power::Int=2`: The power to which the displacement is raised. Default is 2 for MSD. Set to 4 for the mean quartic displacement of the displacement for example.
 
@@ -18,7 +18,7 @@ If `per_particle` is `true`:
 - `msd::Vector{Float64}`: The total MSD vector.
 - `msd_per_particle::Matrix{Float64}`: A `(N, N_dt)` matrix of MSDs for each particle.
 """
-function find_mean_squared_displacement(simulation::Simulation; per_particle=false, power=2)
+function find_mean_squared_displacement(simulation::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}; per_particle=false, power=2)
     msd, msd_per_particle = find_mean_squared_displacement(simulation.r_array, simulation.dt_array, simulation.t1_t2_pair_array, power)
     if per_particle
         return msd, msd_per_particle
@@ -26,6 +26,33 @@ function find_mean_squared_displacement(simulation::Simulation; per_particle=fal
         return msd
     end
 end
+
+"""
+    find_mean_squared_displacement(simulation::Union{MultiComponentSimulation, MCSPVSimulation}; per_particle=false)
+
+Calculates the mean squared displacement (MSD) for a given simulation.
+
+The MSD is defined as `<|r(t) - r(0)|^2>`, where the average is taken over all particles and time origins.
+
+# Arguments
+- `simulation::Union{MultiComponentSimulation, MCSPVSimulation}`: The simulation data.
+- `power::Int=2`: The power to which the displacement is raised. Default is 2 for MSD. Set to 4 for the mean quartic displacement of the displacement for example.
+
+# Returns
+- `msd::Vector{Float64}`: A vector containing the MSD for each time delay `Δt` in `simulation.dt_array`.
+"""
+function find_mean_squared_displacement(simulation::Union{MultiComponentSimulation, MCSPVSimulation}, power=2)
+
+    msd = Vector{Float64}[]
+
+    for s in 1:simulation.N_species
+        msd_s, _ = find_mean_squared_displacement(simulation.r_array[s], simulation.dt_array, simulation.t1_t2_pair_array, power)
+        push!(msd, msd_s)
+    end
+    return msd
+end
+
+
 
 
 """
@@ -92,6 +119,16 @@ This parameter is used to quantify the deviation from Gaussian behavior in parti
 
 """
     find_non_gaussian_parameter(simulation::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}; per_particle=false)
+
+Calculates the non-Gaussian parameter α2 for a given simulation.
+
+# Arguments
+- `simulation::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}`: The simulation data.
+- `per_particle::Bool=false`: If `true`, the function returns the non-Gaussian parameter calculated for each particle individually, in addition to the total non-Gaussian parameter.
+
+# Returns
+- `α2::Float64`: The non-Gaussian parameter for the entire simulation.
+- `α2_per_particle::Matrix{Float64}`: A `(N, N_dt)` matrix of non-Gaussian parameters for each particle, if `per_particle` is `true`.
 """
 function find_non_gaussian_parameter(simulation::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}; per_particle=false)
     msd, msd_per_particle = find_mean_squared_displacement(simulation.r_array, simulation.dt_array, simulation.t1_t2_pair_array, 2)
@@ -106,3 +143,26 @@ function find_non_gaussian_parameter(simulation::Union{SingleComponentSimulation
     end
 end
 
+"""
+    find_non_gaussian_parameter(simulation::Union{MultiComponentSimulation, MCSPVSimulation})
+
+Calculates the non-Gaussian parameter α2 for a given multi-component simulation.
+
+# Arguments
+- `simulation::Union{MultiComponentSimulation, MCSPVSimulation}`: The simulation data.
+
+# Returns
+- `α2::Vector{Vector{Float64}}`: A vector containing the non-Gaussian parameter for each species in the simulation.
+"""
+
+function find_non_gaussian_parameter(simulation::Union{MultiComponentSimulation, MCSPVSimulation})
+    α2 = Vector{Vector{Float64}}()
+    for s in 1:simulation.N_species
+        msd, msd_per_particle = find_mean_squared_displacement(simulation.r_array[s], simulation.dt_array, simulation.t1_t2_pair_array, 2)
+        mqd, mqd_per_particle = find_mean_squared_displacement(simulation.r_array[s], simulation.dt_array, simulation.t1_t2_pair_array, 4)
+        dims = simulation.Ndims
+        α2_s = α2.(msd, mqd, dims)
+        push!(α2, α2_s)
+    end
+    return α2
+end
