@@ -34,7 +34,7 @@ function read_SPV_simulation(traj, params; dt_array=nothing, t1_t2_pair_array=no
     steps_saved = traj.steps_saved
 
     dt = params.dt
-    dims = length(r[1][1])
+    dims = size(r, 1)
     t = steps_saved * dt
     box_sizes = params.box.box_sizes
     if dt_array === nothing && t1_t2_pair_array === nothing
