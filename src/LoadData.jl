@@ -1031,7 +1031,7 @@ function find_allowed_dt_array(t_array::Vector{Int})
         for t2 in t_array
             if t2 > t1
                 dt = t2 - t1
-                if dt in allowed_dt_array
+                if !(dt in allowed_dt_array)
                     push!(allowed_dt_array, dt)
                 end
             end
