@@ -62,7 +62,7 @@ function read_SPV_simulation(traj, params; dt_array=nothing, t1_t2_pair_array=no
             box_sizes,
             dt_array,
             t1_t2_pair_array,
-            filenamefull
+            "unknown"
         )
 end
 
