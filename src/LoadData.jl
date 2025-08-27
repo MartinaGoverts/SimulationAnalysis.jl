@@ -1043,12 +1043,14 @@ function find_allowed_dt_array(t_array::Vector{Int})
     for dt in dt_array
         t1_t2s = Vector{Vector{Int64}}()
         for t1 in t_array
+            t1_index = findfirst(isequal(t1), t_array)
             t2 = t1 + dt
+            t2_index = findfirst(isequal(t2), t_array)
             if t2 in t_array
-                push!(t1_t2s, [t1, t2])
+                push!(t1_t2s, [t1_index, t2_index])
             end
         end
-        push!(t1_t2_pair_array, stack(t1_t2s))
+        push!(t1_t2_pair_array, stack(t1_t2s)')
     end
     return dt_array, t1_t2_pair_array
 end
