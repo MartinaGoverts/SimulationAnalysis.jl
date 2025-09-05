@@ -105,7 +105,7 @@ function read_SPV_simulation_multicomponent(traj, params, species::Vector{Int}; 
     steps_saved = traj.steps_saved
 
     dt = params.dt
-    dims = length(r[1][1])
+    dims = size(r, 1)  # dims = length(r[1][1])
     t = steps_saved * dt
     box_sizes = params.box.box_sizes
     if dt_array === nothing && t1_t2_pair_array === nothing
@@ -140,8 +140,9 @@ function read_SPV_simulation_multicomponent(traj, params, species::Vector{Int}; 
         fvec[i] = f[:, indices, :]
         Avec[i] = A[indices, :]
         Pvec[i] = P[indices, :]
-        Epotvec[i] = Epot[indices]
+        # Epotvec[i] = Epot[indices]   # this is not saved per particle / species
     end
+    Epotvec = Epot
 
     return MCSPVSimulation(
             N, 
@@ -160,7 +161,7 @@ function read_SPV_simulation_multicomponent(traj, params, species::Vector{Int}; 
             box_sizes,
             dt_array,
             t1_t2_pair_array,
-            filenamefull
+            "unknown"  # filenamefull
         )
 end
 

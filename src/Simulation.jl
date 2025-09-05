@@ -149,7 +149,7 @@ struct MCSPVSimulation <: Simulation
     F_array::Vector{Array{Float64, 3}}
     perimeter_array::Vector{Array{Float64, 2}}
     area_array::Vector{Array{Float64, 2}}
-    Epot_array::Vector{Array{Float64, 1}}
+    Epot_array::Vector{Float64}
     t_array::Vector{Float64}
     box_sizes::Vector{Float64}
     dt_array::Vector{Float64}
