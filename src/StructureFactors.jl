@@ -266,10 +266,10 @@ function _find_S4_offdiagonal(s::SingleComponentSimulation, kspace::KSpace, ρkt
         end
     end
     if total_q_samples == 0
-        println("Warning: no suitable set of q-vectors was found, returning S4=0")
+        # println("Warning: no suitable set of q-vectors was found, returning S4=0")
         return 0.0, 0.0
     end
-    println("Calculated S4 for $total_q_samples different sets of k-vectors")
+    # println("Calculated S4 for $total_q_samples different sets of k-vectors")
     return S₄/N_timesteps/total_q_samples, S₄_conv/total_q_samples
 end
 
@@ -297,7 +297,7 @@ function _dispatch_S4(s::Simulation, kspace::KSpace, ρkt::AbstractDensityModes,
     iq2_set = (1:Nq)[(q2_bounds[1] .< k_lengths .< q2_bounds[2])]
     iq3_set = (1:Nq)[(q3_bounds[1] .< k_lengths .< q3_bounds[2])]
 
-    @time @threads for i=1:length(costheta13_array)
+    @threads for i=1:length(costheta13_array)
         costheta13 = costheta13_array[i]
         @threads for j = 1:length(phi23_array)
             phi23 = phi23_array[j]
@@ -311,7 +311,7 @@ function _dispatch_S4(s::Simulation, kspace::KSpace, ρkt::AbstractDensityModes,
             S4[i,j] = S4new/s.N 
             S4conv[i,j] = S4convnew
             atomic_add!(i_done, 1)
-            println("done = $(i_done[])/$(length(costheta13_array)*length(phi23_array))")
+            # println("done = $(i_done[])/$(length(costheta13_array)*length(phi23_array))")
         end
     end
     return costheta13_array, phi23_array, S4, S4conv

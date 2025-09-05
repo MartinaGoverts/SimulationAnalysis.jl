@@ -71,7 +71,7 @@ function find_density_modes(s::Union{SingleComponentSimulation, SelfPropelledVor
     Imρ = zeros(N_timesteps, Nk)
     if verbose
         println("Calculating density modes for $N particles at $N_timesteps time points for $Nk wave vectors")
-        println("Memory usage: $(Base.format_bytes(2*Base.summarysize(Reρ)))")
+        println("Memory usage: $(Base.format_bytes(2*Base.summarysize(Reρ) + Base.summarysize(kspace)+Base.summarysize(s)))")
         println("Based on 10 GFLOPS, this will take approximately $(round(Nk*s.N*N_timesteps*9/10^10, digits=1)) seconds.")
     end
     tstart = time()

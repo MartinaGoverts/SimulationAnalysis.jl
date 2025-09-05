@@ -45,22 +45,27 @@ function find_relative_distance_neighborlists(s::Union{SingleComponentSimulation
     end
 
     for t = 1:Nt
-        neighbourlist_t = Vector{Vector{Int}}(undef, N)
-        for i = 1:N
-            neighbourlist_t[i] = Vector{Int}()
-            sizehint!(neighbourlist_t[i], 8)
+        begin
+            if t % 100 == 0
+                println("$t / $Nt")
+            end
+            neighbourlist_t = Vector{Vector{Int}}(undef, N)
+            for i = 1:N
+                neighbourlist_t[i] = Vector{Int}()
+                sizehint!(neighbourlist_t[i], 8)
+            end
+            celllist = @views UpdateCellList!(r_array[:, :, t], box, celllist, auxilliary_struct, parallel=false)
+
+            map_pairwise!(
+                (x,y,i,j,d2,neighbourlist_t) -> push_pair!(i, j, d2, neighbourlist_t, D_array, rc2, ζ),
+                neighbourlist_t,
+                box,
+                celllist,
+                parallel=false
+            )
+
+            neighbourlists[t] = neighbourlist_t
         end
-        celllist = @views UpdateCellList!(r_array[:, :, t], box, celllist, auxilliary_struct, parallel=false)
-
-        map_pairwise!(
-            (x,y,i,j,d2,neighbourlist_t) -> push_pair!(i, j, d2, neighbourlist_t, D_array, rc2, ζ),
-            neighbourlist_t,
-            box,
-            celllist,
-            parallel=false
-        )
-
-        neighbourlists[t] = neighbourlist_t
     end
     return neighbourlists
 end

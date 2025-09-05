@@ -152,6 +152,9 @@ This function is only implemented for `SingleComponentSimulation`.
 function find_self_intermediate_scattering_function(s::Simulation, kspace::KSpace, k_sample_array::AbstractVector; k_binwidth=0.1)
     F_array = []
     for (ik, k) in enumerate(k_sample_array)
+        if verbose
+            println("Computing Fs for k = $k")
+        end
         kmin = k - k_binwidth/2
         kmax = k + k_binwidth/2
         push!(F_array, find_self_intermediate_scattering_function(s, kspace; kmin=kmin, kmax=kmax))
@@ -182,7 +185,7 @@ function find_self_intermediate_scattering_function(s::Union{SingleComponentSimu
     kmask = (kmin .< kspace.k_lengths .< kmax)
     k_lengths = kspace.k_lengths[kmask]
     k_array = kspace.k_array[:, kmask]
-    N = s.N
+    N = size(r_array, 2)
     Nk = length(k_lengths)
     Ndt = length(s.dt_array)
     Nt = length(s.t_array)
@@ -196,9 +199,9 @@ function find_self_intermediate_scattering_function(s::Union{SingleComponentSimu
                 ky = k_array[2, ik]
                 kz = k_array[3, ik]
                 for it = 1:Nt
-                    r1x = s.r_array[1, particle, it]
-                    r1y = s.r_array[2, particle, it]
-                    r1z = s.r_array[3, particle, it]
+                    r1x = r_array[1, particle, it]
+                    r1y = r_array[2, particle, it]
+                    r1z = r_array[3, particle, it]
                     rk1 = kx*r1x + ky*r1y + kz*r1z
                     sinrk1, cosrk1 = sincos(rk1)
                     coskr[it, ik] = cosrk1
@@ -210,8 +213,8 @@ function find_self_intermediate_scattering_function(s::Union{SingleComponentSimu
                 kx = k_array[1, ik]
                 ky = k_array[2, ik]
                 for it = 1:Nt
-                    r1x = s.r_array[1, particle, it]
-                    r1y = s.r_array[2, particle, it]
+                    r1x = r_array[1, particle, it]
+                    r1y = r_array[2, particle, it]
                     rk1 = kx*r1x + ky*r1y
                     sinrk1, cosrk1 = sincos(rk1)
                     coskr[it, ik] = cosrk1
