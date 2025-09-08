@@ -32,6 +32,8 @@ function read_SPV_simulation(traj, params; dt_array=nothing, t1_t2_pair_array=no
     A = traj.areas_trajectory |> stack
     P = traj.perimeters_trajectory |> stack
     steps_saved = traj.steps_saved
+    v0 = params.particles.active_force_strengths[1]
+    @assert all([params.particles.active_force_strengths[i] == v0 for i=1:params.N]) "Particles belonging to one species should have the same active force strength!"
 
     dt = params.dt
     dims = size(r, 1)
@@ -52,6 +54,7 @@ function read_SPV_simulation(traj, params; dt_array=nothing, t1_t2_pair_array=no
             dims,
             length(t),
             dt,
+            v0,
             r,
             u,
             f,
@@ -103,6 +106,7 @@ function read_SPV_simulation_multicomponent(traj, params, species::Vector{Int}; 
     A = traj.areas_trajectory |> stack
     P = traj.perimeters_trajectory |> stack
     steps_saved = traj.steps_saved
+    v0 = params.particles.active_force_strengths
 
     dt = params.dt
     dims = size(r, 1)  # dims = length(r[1][1])
@@ -132,6 +136,7 @@ function read_SPV_simulation_multicomponent(traj, params, species::Vector{Int}; 
     fvec = Array{Array{Float64, 3}, 1}(undef, N_species)
     Avec = Array{Array{Float64, 2}, 1}(undef, N_species)
     Pvec = Array{Array{Float64, 2}, 1}(undef, N_species)
+    vvec = Array{Float64, 1}(undef, N_species)
     Epotvec = Array{Float64, 1}(undef, N_species)
     for i in 1:N_species
         indices = findall(species .== i)
@@ -141,6 +146,8 @@ function read_SPV_simulation_multicomponent(traj, params, species::Vector{Int}; 
         Avec[i] = A[indices, :]
         Pvec[i] = P[indices, :]
         # Epotvec[i] = Epot[indices]   # this is not saved per particle / species
+        @assert all( [v0[indices][i] == v0[indices][1] for i=eachindex(indices)] ) "Particles belonging to one species should have the same active force strength!"
+        vvec[i] = v0[indices][1]
     end
     Epotvec = Epot
 
@@ -150,6 +157,7 @@ function read_SPV_simulation_multicomponent(traj, params, species::Vector{Int}; 
             N_species,
             length(t),
             dt,
+            vvec,
             N_particles_per_species,
             rvec,
             uvec,
