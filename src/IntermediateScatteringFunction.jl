@@ -185,6 +185,7 @@ function find_self_intermediate_scattering_function(s::Union{SingleComponentSimu
     kmask = (kmin .< kspace.k_lengths .< kmax)
     k_lengths = kspace.k_lengths[kmask]
     k_array = kspace.k_array[:, kmask]
+    r_array = s.r_array
     N = size(r_array, 2)
     Nk = length(k_lengths)
     Ndt = length(s.dt_array)
