@@ -35,7 +35,7 @@ include("Neighborlists.jl")
 include("BondBreakingParameter.jl")
 include("Clustering.jl")
 include("Utils.jl")
-
+include("CurrentModes.jl")
 
 
 function show(io::IO,  ::MIME"text/plain", s::Union{KSpace, Simulation})
