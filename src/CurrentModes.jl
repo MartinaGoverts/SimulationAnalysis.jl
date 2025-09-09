@@ -18,11 +18,10 @@ k is the wavevector at which the system is probed.
 
 # Arguments
 - `s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}`: a single-component SelfPropelledVoronoi simulation
-- `p`: a ParameterStruct containing the particle parameters
 - `kspace::KSpace`: [...]
 - `verbose=true`: [...]
 """
-function find_current_modes(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, p,  kspace::KSpace; verbose=true)
+function find_current_modes(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, kspace::KSpace; verbose=true)
     Ndim, N, N_timesteps = size(s.r_array)
     Nk = kspace.Nk
 
@@ -36,7 +35,7 @@ function find_current_modes(s::Union{SingleComponentSimulation, SelfPropelledVor
     end
     tstart = time()
 
-    _find_current_modes!(Rej, Imj, s.r_array, s.F_array, s.u_array, p.particles.active_force_strengths, kspace)
+    _find_current_modes!(Rej, Imj, s.r_array, s.F_array, s.u_array, s.v0, kspace)
 
     if verbose
         tstop = time()
@@ -53,8 +52,9 @@ end
 
 # f: interaction force (sim.F_array)
 # u: particle orientations (sim.u_array)
+# v0: active force strength (float)
 # NOTE: only 2D so far; and how about the angle convention?
-function calculate_total_force(f, u, v0_arr)
+function calculate_total_force(f, u, v0)
     orient_vect = sincos.(u)
     Fact = 0 .* similar(f)
     N = size(u, 1); Nt = size(u, 2)
@@ -64,8 +64,8 @@ function calculate_total_force(f, u, v0_arr)
 
     @inbounds for it=1:Nt
         for ip=1:N 
-            Fact[1,ip,it] = v0_arr[ip] * orient_vect[ip, it][2];  # cos 
-            Fact[2,ip,it] = v0_arr[ip] * orient_vect[ip, it][1];  # sin 
+            Fact[1,ip,it] = v0 * orient_vect[ip, it][2];  # cos 
+            Fact[2,ip,it] = v0 * orient_vect[ip, it][1];  # sin 
         end
     end
     return Fact .+ f;
@@ -74,14 +74,14 @@ end
 # r: sim.r_array (positions)
 # f: sim.F_array (interaction forces)
 # u: sim.u_array (orientation angles)
-# v0_arr: params.particles.active_force_strengths
-function _find_current_modes!(Rej, Imj, r, f, u, v0_arr, kspace)
+# v0: active force strengths / species (vector)
+function _find_current_modes!(Rej, Imj, r, f, u, v0, kspace)
     Ndim, N, N_timesteps = size(r)
     Nk = kspace.Nk
     k_array = kspace.k_array
     klengths = kspace.k_lengths
 
-    Ftot = calculate_total_force(f, u, v0_arr);
+    Ftot = calculate_total_force(f, u, v0);
     # Ftot = f  # check case with no interactions
 
     if Ndim == 3
@@ -153,9 +153,8 @@ struct MultiComponentCurrentModes <: AbstractDensityModes
     Im::Vector{Array{Float64, 2}}
 end
 
-# issue: parameterstruct (see above)
 # note: normalization (1/N) is done after calculating the correlation functions and not included in the current modes themselves
-function find_current_modes(s::Union{MultiComponentSimulation,MCSPVSimulation}, p, kspace::KSpace; verbose=true)
+function find_current_modes(s::Union{MultiComponentSimulation,MCSPVSimulation}, kspace::KSpace; verbose=true)
     N_species = length(s.r_array)
     Nk = kspace.Nk
     N_timesteps = size(s.r_array[1], 3)
@@ -171,7 +170,7 @@ function find_current_modes(s::Union{MultiComponentSimulation,MCSPVSimulation}, 
     tstart = time()
 
     for species in 1:N_species
-        _find_current_modes!(Rej[species], Imj[species], s.r_array[species], s.F_array[species], s.u_array[species], p.particles.active_force_strengths[species], kspace)
+        _find_current_modes!(Rej[species], Imj[species], s.r_array[species], s.F_array[species], s.u_array[species], s.v0[species], kspace)
     end
 
     if verbose
@@ -190,22 +189,22 @@ end
 ##########################################################################
 
 # calculate w0 / w(infty); averaged over all particles and all time steps
-function find_force_correlation(s::SelfPropelledVoronoiSimulation, p)
+function find_force_correlation(s::SelfPropelledVoronoiSimulation)
     Fint = s.F_array
     orient = s.u_array
     N = s.N; Nt = s.Nt; Ndims = s.Ndims
-    v0 = p.particles.active_force_strengths
+    v0 = s.v0
     forces = calculate_total_force(Fint, orient, v0)
     force_sum = [forces[i,:,:].^2 for i=1:Ndims]
     return sum(sum(force_sum)) / (Ndims*Nt*N)
 end
 
-function find_force_correlation(s::MCSPVSimulation, p)
+function find_force_correlation(s::MCSPVSimulation)
     N_species = s.N_species; N = s.N; Nt = s.Nt
     Ndims = s.Ndims
     Fint = s.F_array
     orient = s.u_array
-    v0 = p.particles.active_force_strengths
+    v0 = s.v0
     w0 = zeros(N_species, N_species)
 
     for spec in 1:N_species
