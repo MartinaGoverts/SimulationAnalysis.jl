@@ -84,6 +84,7 @@ A mutable struct that holds all data for a self-propelled Voronoi particle simul
 - `Nt::Int64`: Number of time steps.
 - `dt::Float64`: Time step size.
 - `v0::Float64`: Active force strength.
+- `mobility::Float64`: Mobility (inverse of the friction constant).
 - `r_array::Array{Float64, 3}`: Particle positions.
 - `u_array::Array{Float64, 2}`: Particle orientations (radians).
 - `F_array::Array{Float64, 3}`: Forces on particles.
@@ -102,6 +103,7 @@ struct SelfPropelledVoronoiSimulation <: Simulation
     Nt::Int64
     dt::Float64
     v0::Float64
+    mobility::Float64
     r_array::Array{Float64, 3}
     u_array::Array{Float64, 2}
     F_array::Array{Float64, 3}
@@ -127,6 +129,7 @@ A mutable struct that holds all data for a multi-component self-propelled Vorono
 - `Nt::Int64`: Number of time steps.
 - `dt::Float64`: Time step size.
 - `v0::Vector{Float64}`: A vector containing the active force strength of each species.
+- `mobility::Vector{Float64}`: A vector containing the mobility (inverse of the friction constant) of each species.
 - `N_particles_per_species::Vector{Int}`: A vector containing the number of particles for each species.
 - `r_array::Vector{Array{Float64, 3}}`: A vector of particle position arrays. Each element `r_array[i]` is a `(N_particles_per_species[i], Ndims, N_time_steps)` array for species `i`.
 - `u_array::Vector{Array{Float64, 2}}`: A vector of particle orientation arrays for each species.
@@ -147,6 +150,7 @@ struct MCSPVSimulation <: Simulation
     Nt::Int64
     dt::Float64
     v0::Vector{Float64}
+    mobility::Vector{Float64}
     N_particles_per_species::Vector{Int}
     r_array::Vector{Array{Float64, 3}}
     u_array::Vector{Array{Float64, 2}}
