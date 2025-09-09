@@ -36,6 +36,7 @@ include("BondBreakingParameter.jl")
 include("Clustering.jl")
 include("Utils.jl")
 include("CurrentModes.jl")
+include("VelocityCorrelations.jl")
 
 
 function show(io::IO,  ::MIME"text/plain", s::Union{KSpace, Simulation})
