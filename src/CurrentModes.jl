@@ -56,20 +56,11 @@ end
 # NOTE: only 2D so far
 # Ftot = Fint + v0 / μ * orientation_vector
 function calculate_total_force(f, u, v0, μ)
-    orient_vect = sincos.(u)
-    Fact = 0 .* similar(f)
-    N = size(u, 1); Nt = size(u, 2)
-    
-    @assert size(f, 2) == N 
-    @assert size(f, 3) == Nt
-
-    @inbounds for it=1:Nt
-        for ip=1:N 
-            Fact[1,ip,it] = v0/μ * orient_vect[ip, it][2];  # cos 
-            Fact[2,ip,it] = v0/μ * orient_vect[ip, it][1];  # sin 
-        end
-    end
-    return Fact .+ f;
+    @assert size(u) == size(f[1,:,:])
+    Fact = similar(f)
+    Fact[1,:,:] = @. v0 / μ * cos.(u)
+    Fact[2,:,:] = @. v0 / μ * sin.(u)
+    return Fact .+ f
 end
 
 # r: sim.r_array (positions)
