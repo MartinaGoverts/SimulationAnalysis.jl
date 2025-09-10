@@ -78,7 +78,7 @@ function find_structure_factor(s::Simulation, kspace::KSpace, ρkt::AbstractDens
         kmax = k + k_binwidth/2
         push!(S_array, find_structure_factor(s, kspace, ρkt; kmin=kmin, kmax=kmax))
     end
-    return S_array  # shouldn't this be normalized by N?
+    return S_array
 end
 
 """

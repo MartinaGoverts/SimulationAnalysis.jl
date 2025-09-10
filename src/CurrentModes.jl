@@ -1,17 +1,19 @@
+# TO DO: partial velocity correlations (with different forces)
+# TO DO: 3D calculation of active force (this might also depend on simulation details so leave for now)
+# added keyword to current mode calculation (specify which force to use)
 
 struct SingleComponentCurrentModes <: AbstractDensityModes
     Re::Array{Float64, 2}
     Im::Array{Float64, 2}
 end
 
-# make friction constant species-dependent (even though in SPV it is always the same - most general case)
 # current mode: defined according to Reichman 2005 (Debets 2023 doesn't include the 1/k prefactor)
 """
     find_current_modes(s::SingleComponentSimulation, p, kspace::Kspace; verbose = true)
 
 A function that calculates the density current modes, which are defined as:
-j(k,t) = ∑_j (k dot Ftot) / |k| exp(i k dot r_j(t)),
-where r_j is the position of particle j, Ftot is the total (interaction + active) force and
+j(k,t) = μ / |k| ∑_j (k dot Ftot) exp(i k dot r_j(t)),
+where r_j is the position of particle j, μ is the particle's mobility, Ftot is the total (interaction + active) force and
 k is the wavevector at which the system is probed.
 
 # Arguments
@@ -67,14 +69,24 @@ end
 # f: sim.F_array (interaction forces)
 # u: sim.u_array (orientation angles)
 # v0: active force strengths / species (vector)
-function _find_current_modes!(Rej, Imj, r, f, u, v0, μ, kspace)
+# idea: keyword (i, a, t) - interaction force, active force or total force?
+function _find_current_modes!(Rej, Imj, r, f, u, v0, μ, kspace; force_keyword="t")
     Ndim, N, N_timesteps = size(r)
     Nk = kspace.Nk
     k_array = kspace.k_array
     klengths = kspace.k_lengths
-
     Ftot = calculate_total_force(f, u, v0, μ);
-    # Ftot = f  # check case with no interactions
+
+    if force_keyword == "t" # use total force
+        F = Ftot
+    elseif force_keyword == "i" # use interaction force
+        F = f
+    elseif force_keyword == "a"  # active force
+        F = Ftot .- f
+    else
+        @warn "Received unsupported force keyword. Using total force for current modes."
+        F = Ftot
+    end
 
     if Ndim == 3
         @batch per=thread for t = 1:N_timesteps
@@ -91,9 +103,9 @@ function _find_current_modes!(Rej, Imj, r, f, u, v0, μ, kspace)
                     rx = r[1, particle, t]
                     ry = r[2, particle, t]
                     rz = r[3, particle, t]
-                    fx = Ftot[1, particle, t]
-                    fy = Ftot[2, particle, t]
-                    fz = Ftot[3, particle, t]
+                    fx = F[1, particle, t]
+                    fy = F[2, particle, t]
+                    fz = F[3, particle, t]
 
                     kr = kx*rx + ky*ry + kz*rz
                     kf = kx*fx + ky*fy + kz*fz
@@ -119,8 +131,8 @@ function _find_current_modes!(Rej, Imj, r, f, u, v0, μ, kspace)
                 for particle = 1:N 
                     rx = r[1, particle, t]
                     ry = r[2, particle, t]
-                    fx = Ftot[1, particle, t]
-                    fy = Ftot[2, particle, t]
+                    fx = F[1, particle, t]
+                    fy = F[2, particle, t]
 
                     kr = kx*rx + ky*ry
                     kf = kx*fx + ky*fy
