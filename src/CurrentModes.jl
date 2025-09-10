@@ -223,8 +223,8 @@ for every wavevector in `kspace`.
 - `verbose=true`: If `true`, prints a performance overview.
 
 # Returns
-A SingleComponentCurrentModes object, with fields `Re` and `Im` that contain the real and imaginary parts of the current modes
-at all times and for all wavevectors.
+A MultiComponentCurrentModes object, with fields `Re` and `Im` that contain the real and imaginary parts of the current modes of
+all species of the mixture, at all times and for all wavevectors.
 """
 function find_current_modes(s::Union{MultiComponentSimulation,MCSPVSimulation}, kspace::KSpace; verbose=true)
     N_species = length(s.r_array)
