@@ -1,4 +1,3 @@
-# TO DO: different forces --> include type of force in output / print text?
 # TO DO: 3D calculation of active force (this might also depend on simulation details so leave for now)
 
 """
@@ -7,7 +6,7 @@
 A struct which holds the current modes of a single-component simulation.
     
 The current modes are defined as: j(k,t) = μ / |k| ∑_j (k ⋅ F_j(t)) exp(i k ⋅ r_j(t)), where μ is the
-mobility, k is the wavevector, r_j(t) is the position of particle j at time t, and F_j(t) is the force on 
+mobility, k is the wavevector, r_j(t) is the position of particle j at time t, and F_j(t) is the total force on 
 particle j.
 
 # Fields
@@ -42,7 +41,7 @@ end
     find_current_modes(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, kspace::KSpace; verbose=true)
 
 A function which calculates the current modes, which are defined as: j(k,t) = μ / |k| ∑_j (k ⋅ F_j(t)) exp(i k ⋅ r_j(t)).
-Here r_j(t) is the position of particle j, μ is the particle's mobility, F_j(t) is the force on particle j and
+Here r_j(t) is the position of particle j, μ is the particle's mobility, F_j(t) is the total force on particle j and
 k is the wavevector at which the system is probed.
 
 The total force (interaction + active) on every particle is calculated. The current modes are stored for every timestep in simulation `s`, and
@@ -89,9 +88,8 @@ end
 
 Calculates the total force on every particle for all timesteps.
     
-The total force is defined as: Ftot_j = Fint_j + v0 / μ n_j,
-where Fint_j is the interaction force, and n_j = (cosθ_j, sinθ_j) is the
-orientation vector of the active force. Both forces are time-dependent.
+The total force is defined as: Ftot_j = Fint_j + v0 / μ n_j, where Fint_j is the interaction force, 
+and n_j = (cosθ_j, sinθ_j) is the orientation vector of the active force. Both forces are time-dependent.
 
 # Arguments
 - `f::Array{Float64, 3}`: Contains the interaction forces of every particle. Dimensions are (2, N_particles, N_timesteps) 
@@ -109,7 +107,7 @@ end
 
 # NOTE: calculate_total_force() only 2D! (Edit later)
 """
-    _find_current_modes!(Rej, Imj, r, f, u, v0, μ, kspace; force_keyword="t")
+    _find_current_modes!(Rej, Imj, r, f, u, v0, μ, kspace)
 
 Calculates the current modes by modifying `Rej` and `Imj` in-place. Note that currently only
 two-dimensional force calculations are implemented!
@@ -123,26 +121,13 @@ two-dimensional force calculations are implemented!
 - `v0`: Active force strength.
 - `μ`: Mobility.
 - `kspace`: An object containing the wavevectors at which to evaluate the current modes.
-- `force_keyword=t`: Specifies whether to calculate using the total force (`t`), the interaction force (`i`) or the 
-        active force (`a`). The default is `t`. When a different keyword is given, the total force is calculated.
 """
-function _find_current_modes!(Rej, Imj, r, f, u, v0, μ, kspace; force_keyword="t")
+function _find_current_modes!(Rej, Imj, r, f, u, v0, μ, kspace)
     Ndim, N, N_timesteps = size(r)
     Nk = kspace.Nk
     k_array = kspace.k_array
     klengths = kspace.k_lengths
-    Ftot = calculate_total_force(f, u, v0, μ);
-
-    if force_keyword == "t" # use total force
-        F = Ftot
-    elseif force_keyword == "i" # use interaction force
-        F = f
-    elseif force_keyword == "a"  # active force
-        F = Ftot .- f
-    else
-        @warn "Received unsupported force keyword. Using total force for current modes."
-        F = Ftot
-    end
+    F = calculate_total_force(f, u, v0, μ);
 
     if Ndim == 3
         @batch per=thread for t = 1:N_timesteps
