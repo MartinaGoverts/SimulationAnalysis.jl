@@ -288,3 +288,42 @@ plot(sim.dt_array[2:end], a2[2:end],
 ![MSD](plots/alpha2.png)
 
 ---
+
+
+## Velocity correlations
+
+In active (self-propelled) systems, there exist non-trivial velocity correlations which show oscillatory behavior in k-space. The velocity correlation function is defined as $\omega(k,t) = \frac{1}{N} \braket{j(k)^* j(k,t) }$. The current modes are defined as $j(k,t) = \mu \sum_j \hat{\mathbf{k}}\cdot\mathbf{F}^{\text{tot}}_j \exp(i\mathbf{k}\cdot\mathbf{r}_j(t))$, where $\mathbf{F}_j^{\text{tot}}$ is the total force on particle $j$, $\mu$ is the mobility of the particle, and the other quantities have the same meaning as for the functions above.
+
+Note that the calculation of the total force differs based on the simulation loaded:
+
+- For SelfPropelledVoronoi simulations, the total force is calculated using the saved interaction forces and random particle orientations.
+- For other simulations, it is assumed that the instantaneous particle velocities are proportional to the active force on each particle (so this only makes sense in active systems without thermal motion!).
+
+Both static and dynamic velocity correlations can be calculated. The example below makes use of the `SelfPropelledVoronoi.jl` package to obtain and load the simulation data.
+
+```julia
+using SimulationAnalysis, SelfPropelledVoronoi, Plots
+
+# read the simulation data (this requires the SelfPropelledVoronoi package!)
+filename = joinpath(dirname(pathof(SimulationAnalysis)), "..", "test", "data", "spv_data_2.h5")
+traj, params = SelfPropelledVoronoi.load_trajectory(filename);
+sim = SimulationAnalysis.read_SPV_simulation(traj, params)
+
+k_sample_arr = 1.0:0.4:20;  # which k-values to evaluate
+
+# construct k-space and calculate current modes
+# it is possible to directly calculate ω(k), but for repeated use it is more computationally efficient to define a k-space and current modes beforehand
+kbounds = (0, 20.0);
+kspace = SimulationAnalysis.construct_k_space(sim, kbounds);
+current_modes = SimulationAnalysis.find_current_modes(sim, kspace; verbose=true);
+
+wk = SimulationAnalysis.find_static_velocity_correlations(sim, kspace, current_modes, k_sample_arr, k_binwidth=0.2)
+w∞ = SimulationAnalysis.find_force_correlation(sim)  # calculate limit k → ∞
+
+plot(k_sample_arr, wk, label="\$\\omega(k)\$", l=1.7)
+hline!([w∞], ls=:dash, lw=1.5, label="\$\\omega(k\\rightarrow\\infty) \$")
+xlabel!("\$k\$")
+ylabel!("\$\\omega(k)\$")
+```
+
+![wk](plots/wk_example.png)
