@@ -292,12 +292,12 @@ plot(sim.dt_array[2:end], a2[2:end],
 
 ## Velocity correlations
 
-In active (self-propelled) systems, there exist non-trivial velocity correlations which show oscillatory behavior in k-space. The velocity correlation function is defined as $\omega(k,t) = \frac{1}{N} \braket{j(k)^* j(k,t) }$. The current modes are defined as $j(k,t) = \mu \sum_j \hat{\mathbf{k}}\cdot\mathbf{F}^{\text{tot}}_j \exp(i\mathbf{k}\cdot\mathbf{r}_j(t))$, where $\mathbf{F}_j^{\text{tot}}$ is the total force on particle $j$, $\mu$ is the mobility of the particle, and the other quantities have the same meaning as for the functions above.
+In active (self-propelled) systems, there exist non-trivial velocity correlations which show oscillatory behavior in k-space. The velocity correlation function is defined as $\omega(k,t) = \frac{1}{N} \braket{j(k)^* j(k,t) }$. The current modes are defined as $j(k,t) = \mu \sum_j \hat{\mathbf{k}}\cdot\mathbf{F}^{\text{tot}}_j \exp(i\mathbf{k}\cdot\mathbf{r}_j(t))$, where $\mathbf{F}_j^{\text{tot}}$ is the total force on particle $j$, $\mu$ is the mobility (inverse of the friction constant), and the other quantities have the same meaning as for the functions above.
 
 Note that the calculation of the total force differs based on the simulation loaded:
 
 - For SelfPropelledVoronoi simulations, the total force is calculated using the saved interaction forces and random particle orientations.
-- For other simulations, it is assumed that the instantaneous particle velocities are proportional to the active force on each particle (so this only makes sense in active systems without thermal motion!).
+- For other simulations, it is assumed that the instantaneous particle velocities are proportional to the active force on each particle (so this only applies to active systems without thermal motion!). Currently, the friction constant is not saved so it is assumed to be unity.
 
 Both static and dynamic velocity correlations can be calculated. The example below makes use of the `SelfPropelledVoronoi.jl` package to obtain and load the simulation data.
 
