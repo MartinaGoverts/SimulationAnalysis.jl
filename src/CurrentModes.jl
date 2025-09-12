@@ -87,7 +87,7 @@ end
 
 Calculates the total force on every particle, scaled by the mobility, for all timesteps in a Self-Propelled Voronoi simulation.
     
-The total force is defined as: Ftot_j = Fint_j + v0 / μ n_j, where Fint_j is the interaction force, 
+The total force is defined as: Ftot_j = μ Fint_j + v0 n_j, where Fint_j is the interaction force, 
 and n_j = (cosθ_j, sinθ_j) is the orientation vector of the active force. Both forces are time-dependent.
 
 # Arguments
@@ -107,7 +107,7 @@ end
 
 Calculates the total force on every particle, scaled by the mobility, for all timesteps and all species in a Self-Propelled Voronoi simulation.
     
-The total force is defined as: Ftot_j = Fint_j + v0 / μ n_j, where Fint_j is the interaction force, 
+The total force is defined as: Ftot_j = μ Fint_j + v0 n_j, where Fint_j is the interaction force, 
 and n_j = (cosθ_j, sinθ_j) is the orientation vector of the active force. Both forces are time-dependent.
 
 # Arguments
