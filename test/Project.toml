@@ -1,2 +1,3 @@
 [deps]
+SelfPropelledVoronoi = "4dfba7fc-e1fc-4b7f-b937-41f797185184"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

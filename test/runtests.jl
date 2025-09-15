@@ -1,4 +1,5 @@
 using Test, SimulationAnalysis
+using SelfPropelledVoronoi  # necessary for reading SPV data
 
 file = joinpath(@__DIR__, "data", "test_trajectory.h5")
 
@@ -84,3 +85,6 @@ end
     @test length(MSD) == length(traj.dt_array)
 end
 
+@testset "velocity correlations" begin
+    include("test_velocity_correlations.jl")
+end
