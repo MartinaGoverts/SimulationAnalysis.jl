@@ -297,7 +297,7 @@ In active (self-propelled) systems, there exist non-trivial velocity correlation
 Note that the calculation of the total force differs based on the simulation loaded:
 
 - For SelfPropelledVoronoi simulations, the total force is calculated using the saved interaction forces and random particle orientations.
-- For other simulations, it is assumed that the instantaneous particle velocities are proportional to the active force on each particle (so this only applies to active systems without thermal motion!). Currently, the friction constant is not saved so it is assumed to be unity.
+- For other simulations, it is assumed that the instantaneous particle velocities are proportional to the total force on each particle (so this only applies to systems without thermal motion and inertia!). Currently, the friction constant is not saved so it is assumed to be unity.
 
 Both static and dynamic velocity correlations can be calculated. The example below makes use of the `SelfPropelledVoronoi.jl` package to obtain and load the simulation data.
 

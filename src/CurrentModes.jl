@@ -105,7 +105,7 @@ end
 """
     calculate_total_force(s::MCSPVSimulation)
 
-Calculates the total force on every particle, scaled by the mobility, for all timesteps and all species in a Self-Propelled Voronoi simulation.
+Calculates the total force on every particle, scaled by the mobility, for all timesteps and all species in a multi-component Self-Propelled Voronoi simulation.
     
 The total force is defined as: Ftot_j = μ Fint_j + v0 n_j, where Fint_j is the interaction force, 
 and n_j = (cosθ_j, sinθ_j) is the orientation vector of the active force. Both forces are time-dependent.
@@ -131,36 +131,32 @@ end
     calculate_total_force(s::Simulation)
 
 Calculates the total force on all particles for a general `Simulation` object. It is assumed that the
-active forces are stored in terms of particle velocities (for an active Brownian system), and that the
-friction constant is equal to 1.0.
+total force is stored as instantanenous particle velocities (so this only holds for athermal non-inertial systems!)
+
+The equation of motion: dr_j(t)/dt = v_j(t) = μ Ftot_j, where μ is the mobility (inverse of the friction constant).
+
+Since a general `Simulation` object has no field for the friction constant, it is assumed to be 1.0.
 
 # Arguments
 - `s::Simulation`: A single-component simulation object.
 """
 function calculate_total_force(s::Simulation)
-    Fint = s.F_array
-    Fact = s.v_array
-    return Fint .+ Fact
+    return copy(s.v_array)
 end
 
 """
     calculate_total_force(s::MultiComponentSimulation)
 
 Calculates the total force on all particles for a general `MultiComponentSimulation` object. It is assumed that the
-active forces are stored in terms of particle velocities (for an active Brownian system), and that the
-friction constant is equal to 1.0.
+total force is stored in terms of particle velocities (for an athermal, non-inertial system), and that the friction constant is equal to 1.0.
+
+The equation of motion: dr{α}_j(t)/dt = v{α}_j(t) = μ{α} Ftot{α}_j, where μ is the mobility (inverse of the friction constant).
 
 # Arguments
 - `s::MultiComponentSimulation`: A multi-component simulation object
 """
 function calculate_total_force(s::MultiComponentSimulation)
-    Ftot = zero(s.F_array)
-    for i=1:s.N_species
-        Fint = s.F_array[i]
-        Fact = s.v_array[i]
-        Ftot[i] .= Fint .+ Fact
-    end
-    return Ftot
+    return copy(s.v_array)
 end
 
 """
