@@ -8,8 +8,8 @@ mobility, k is the wavevector, r_j(t) is the position of particle j at time t, a
 particle j.
 
 # Fields
-- `Re::Matrix{Float64}`: Real part of the current modes, with dimensions  `(N_timesteps, Nk)`.
-- `Im::Matrix{Float64}`: Imaginary part of the current modes, `Σ_j sin(k ⋅ rj)`, with dimensions `(N_timesteps, Nk)`.
+- `Re::Matrix{Float64}`: Real part of the current modes, with dimensions `(N_timesteps, Nk)`.
+- `Im::Matrix{Float64}`: Imaginary part of the current modes, with dimensions `(N_timesteps, Nk)`.
 """
 struct SingleComponentCurrentModes <: AbstractDensityModes
     Re::Array{Float64, 2}
@@ -25,8 +25,8 @@ The current modes are defined as: j{α}(k,t) = μ / |k| ∑_j (k ⋅ F{α}_j(t))
 where {α} denotes the subspecies, and the sum over j now runs over the number of particles of subspecies α.
 
 # Fields
-- `Re::Matrix{Float64}`: Real part of the current modes, with dimensions  `(N_timesteps, Nk)`.
-- `Im::Matrix{Float64}`: Imaginary part of the current modes, `Σ_j sin(k ⋅ rj)`, with dimensions `(N_timesteps, Nk)`.
+- `Re::Matrix{Float64}`: Real part of the current modes, with dimensions `(N_timesteps, Nk)`.
+- `Im::Matrix{Float64}`: Imaginary part of the current modes, with dimensions `(N_timesteps, Nk)`.
 """
 struct MultiComponentCurrentModes <: AbstractDensityModes
     Re::Vector{Array{Float64, 2}}
@@ -131,7 +131,7 @@ end
     calculate_total_force(s::Simulation)
 
 Calculates the total force on all particles for a general `Simulation` object. It is assumed that the
-total force is stored as instantanenous particle velocities (so this only holds for athermal non-inertial systems!)
+total force is stored as instantanenous particle velocities (so this only applies to athermal, non-inertial systems!)
 
 The equation of motion: dr_j(t)/dt = v_j(t) = μ Ftot_j, where μ is the mobility (inverse of the friction constant).
 
@@ -148,7 +148,7 @@ end
     calculate_total_force(s::MultiComponentSimulation)
 
 Calculates the total force on all particles for a general `MultiComponentSimulation` object. It is assumed that the
-total force is stored in terms of particle velocities (for an athermal, non-inertial system), and that the friction constant is equal to 1.0.
+total force is stored in terms of particle velocities (which holds for athermal, non-inertial systems), and that the friction constant is equal to 1.0.
 
 The equation of motion: dr{α}_j(t)/dt = v{α}_j(t) = μ{α} Ftot{α}_j, where μ is the mobility (inverse of the friction constant).
 

@@ -154,7 +154,7 @@ The dynamic velocity correlation function is defined as ω(k,t) = 1/N < j(k)* j(
 - `kspace::KSpace`: Contains the available wavevectors.
 - `jkt::SingleComponentCurrentModes`: The single-component current modes.
 - `kmin=7.0`: The lower bound over which to average ω(k,t).
-- `kmax=7.4`: The upper over which to average ω(k,t).
+- `kmax=7.4`: The upper bound over which to average ω(k,t).
 """
 function find_dynamic_velocity_correlations(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, kspace::KSpace, jkt::SingleComponentCurrentModes; kmin=0.0, kmax=10.0^10.0)
     Ndt = length(s.dt_array)
@@ -175,7 +175,7 @@ The result is averaged over all k-vectors with magnitude between `kmin` and `kma
 - `kspace::KSpace`: Contains the available wavevectors.
 - `jkt::MultiComponentCurrentModes`: The multi-component current modes.
 - `kmin=0.0`: The lower bound over which to average ω{αβ}(k,t).
-- `kmax=10.0^10.0`: The upper over which to average ω{αβ}(k,t).
+- `kmax=10.0^10.0`: The upper bound over which to average ω{αβ}(k,t).
 """
 function find_dynamic_velocity_correlations(s::Union{MultiComponentSimulation,MCSPVSimulation}, kspace::KSpace, jkt::MultiComponentCurrentModes; kmin=0.0, kmax=10.0^10.0)
     N_species = s.N_species
