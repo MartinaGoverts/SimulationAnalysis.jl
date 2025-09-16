@@ -1,4 +1,4 @@
-using Test, SimulationAnalysis
+using Test, SimulationAnalysis, Random, StaticArrays
 
 file = joinpath(@__DIR__, "data", "test_trajectory.h5")
 
@@ -48,6 +48,8 @@ end
     traj = SimulationAnalysis.read_simulation_Berthier(file; original=false, velocities=false, forcestype=false, time_origins=10)
 
     gr =  SimulationAnalysis.find_radial_distribution_function(traj, 10,  10.0)
+    @test length(gr[r]) == length(gr[g])
+    @test all(gr[2] .>= 0)
 end
 
 @testset "Neighborlists" begin
@@ -60,7 +62,7 @@ end
     @test length(neighborlists[1]) == 1000
 
 
-    neighborlists = @time SimulationAnalysis.find_voronoi_neighborlists(traj)
+    neighborlists = @time SimulationAnalysis.find_voronoi_neighborlists(traj; indices=1:10)
 
     @test length(neighborlists) == 430
 

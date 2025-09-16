@@ -15,7 +15,7 @@ function load_trajectory(filename::String)
         frictionconstant = read(params_group["frictionconstant"])
         
         box_sizes_vec = read(params_group["box_sizes"])
-        box = SimulationBox(box_sizes_vec[1], box_sizes_vec[2])
+        box = (; box_sizes=(box_sizes_vec[1], box_sizes_vec[2]))
 
         particles_group = params_group["particles"]
         target_perimeters = read(particles_group["target_perimeters"])
@@ -24,10 +24,10 @@ function load_trajectory(filename::String)
         K_A = read(particles_group["K_A"])
         active_force_strengths = read(particles_group["active_force_strengths"])
         rotational_diffusion_constants = read(particles_group["rotational_diffusion_constants"])
-        
-        particles = VoronoiCells(target_perimeters, target_areas, K_P, K_A, active_force_strengths, rotational_diffusion_constants)
-        
-        dump_info = DumpInfo(filename=filename) # Using defaults
+
+        particles = (; target_perimeters=target_perimeters, target_areas=target_areas, K_P=K_P, K_A=K_A, active_force_strengths=active_force_strengths, rotational_diffusion_constants=rotational_diffusion_constants)
+
+        dump_info = (; filename=filename) # Using defaults
         rng = Random.MersenneTwister()
         if "seed" in keys(params_group)
             seed = read(params_group["seed"])
@@ -42,12 +42,12 @@ function load_trajectory(filename::String)
         )
 
         # Initialize TrajectoryData
-        trajectory_data = (; positions = Vector{Vector{SVector{2, Float64}}}(), 
-                             orientations = Vector{Vector{Float64}}(), 
-                             forces = Vector{Vector{SVector{2, Float64}}}(), 
-                             potential_energy = Float64[], 
-                             areas = Vector{Vector{Float64}}(), 
-                             perimeters = Vector{Vector{Float64}}(), 
+        trajectory_data = (; positions_trajectory = Vector{Vector{SVector{2, Float64}}}(), 
+                             orientations_trajectory = Vector{Vector{Float64}}(), 
+                             forces_trajectory = Vector{Vector{SVector{2, Float64}}}(), 
+                             potential_energy_trajectory = Float64[], 
+                             areas_trajectory = Vector{Vector{Float64}}(), 
+                             perimeters_trajectory = Vector{Vector{Float64}}(), 
                              steps_saved = Int[])
 
         # Identify and sort step groups

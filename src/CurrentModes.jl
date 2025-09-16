@@ -55,7 +55,7 @@ Note that a general `SingleComponentSimulation` object currently has no field fo
 A SingleComponentCurrentModes object, with fields `Re` and `Im` that contain the real and imaginary parts of the current modes
 at all times and for all wavevectors.
 """
-function find_current_modes(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, kspace::KSpace; verbose=true)
+function find_current_modes(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, kspace::KSpace; verbose=true, friction_constant=1.0)
     Ndim, N, N_timesteps = size(s.r_array)
     Nk = kspace.Nk
 
@@ -68,8 +68,11 @@ function find_current_modes(s::Union{SingleComponentSimulation, SelfPropelledVor
         println("Based on 10 GFLOPS, this will take approximately $(round(Nk*s.N*N_timesteps*9/10^10, digits=1)) seconds.")
     end
     tstart = time()
-
-    Ftot = calculate_total_force(s)
+    if s isa SingleComponentSimulation || s isa MultiComponentSimulation
+        Ftot = calculate_total_force(s; friction_constant=friction_constant)
+    else
+        Ftot = calculate_total_force(s)
+    end
     _find_current_modes!(Rej, Imj, s.r_array, Ftot, kspace)
 
     if verbose
@@ -131,32 +134,29 @@ end
     calculate_total_force(s::Simulation)
 
 Calculates the total force on all particles for a general `Simulation` object. It is assumed that the
-total force is stored as instantanenous particle velocities (so this only applies to athermal, non-inertial systems!)
+total passive force is stored as instantanenous particle forces, and that the total active force is stored in terms of particle velocities. The total force is given by Ftot = v + γ F, where γ is the friction constant.
 
-The equation of motion: dr_j(t)/dt = v_j(t) = μ Ftot_j, where μ is the mobility (inverse of the friction constant).
-
-Since a general `Simulation` object has no field for the friction constant, it is assumed to be 1.0.
 
 # Arguments
 - `s::Simulation`: A single-component simulation object.
+- `friction_constant=1.0`: The friction constant, which is the inverse of the mobility.
 """
-function calculate_total_force(s::Simulation)
-    return copy(s.v_array)
+function calculate_total_force(s::SingleComponentSimulation; friction_constant=1.0)
+    return s.v_array + friction_constant*s.F_array
 end
 
 """
     calculate_total_force(s::MultiComponentSimulation)
 
 Calculates the total force on all particles for a general `MultiComponentSimulation` object. It is assumed that the
-total force is stored in terms of particle velocities (which holds for athermal, non-inertial systems), and that the friction constant is equal to 1.0.
-
-The equation of motion: dr{α}_j(t)/dt = v{α}_j(t) = μ{α} Ftot{α}_j, where μ is the mobility (inverse of the friction constant).
+total passive force is stored as instantanenous particle forces , and that the total active force is stored in terms of particle velocities. The total force is given by Ftot = v + γ F, where γ is the friction constant.
 
 # Arguments
 - `s::MultiComponentSimulation`: A multi-component simulation object
+- `friction_constant=1.0`: The friction constant, which is the inverse of the mobility.
 """
-function calculate_total_force(s::MultiComponentSimulation)
-    return copy(s.v_array)
+function calculate_total_force(s::MultiComponentSimulation; friction_constant=1.0)
+    return s.v_array + friction_constant*s.F_array
 end
 
 """
@@ -309,11 +309,11 @@ the simulation.
 # Returns:
 A Float64 (The average force squared)
 """
-function find_force_correlation(s::Union{Simulation, SelfPropelledVoronoiSimulation})
+function find_force_correlation(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}; friction_constant=1.0)
     N = s.N; Nt = s.Nt; Ndims = s.Ndims
-    forces = calculate_total_force(s)
-    force_sum = [(forces[i,:,:]).^2 for i=1:Ndims]
-    return sum(sum(force_sum)) / (Ndims*Nt*N)
+    forces = calculate_total_force(s; friction_constant=friction_constant)
+    force_sum = sum(abs2, forces)  #[(forces[i,:,:]).^2 for i=1:Ndims]
+    return force_sum / (Ndims*Nt*N*friction_constant^2)
 end
 
 """
