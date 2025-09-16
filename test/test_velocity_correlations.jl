@@ -15,7 +15,7 @@ function load_trajectory(filename::String)
         frictionconstant = read(params_group["frictionconstant"])
         
         box_sizes_vec = read(params_group["box_sizes"])
-        box = (; box_sizes=(box_sizes_vec[1], box_sizes_vec[2]))
+        box = (; box_sizes=[box_sizes_vec[1], box_sizes_vec[2]])
 
         particles_group = params_group["particles"]
         target_perimeters = read(particles_group["target_perimeters"])
