@@ -126,8 +126,8 @@ kspace = SimulationAnalysis.construct_k_space(sim, kbounds);
 current_modes = SimulationAnalysis.find_current_modes(sim, kspace; verbose=false);
 
 @test size(current_modes.Re) == size(current_modes.Im) == (sim.Nt, kspace.Nk)
-@test current_modes.Re[1,1] == 5.863837291322234
-@test current_modes.Im[100,1] == 4.349061145734272
+@test (current_modes.Re[1,1] - 5.863837291322234) < 1e-13
+@test (current_modes.Im[100,1] - 4.349061145734272) < 1e-13
 
 # calculation of w(k)
 @test SimulationAnalysis.find_static_velocity_correlations(sim, kspace, current_modes, kmin=0.0, kmax=20.0) ==
