@@ -1,5 +1,4 @@
 using Test, SimulationAnalysis
-using SelfPropelledVoronoi  # necessary for reading SPV data
 
 file = joinpath(@__DIR__, "data", "test_trajectory.h5")
 

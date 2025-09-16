@@ -102,8 +102,7 @@ where j(k,t) is a single-component current mode, the star represents complex con
 
 This function first constructs a `KSpace` object with the bounds specified by `kmin` and `kmax`,
 then computes the current modes for this `KSpace`, and finally calculates the velocity correlation averaged over 
-the k-vectors in the specified range. ω(k,t) is calculated for all time intervals in the simulation `s`. Note that ω(k,t)
-typically decays quickly, so the data should contain small time intervals to obtain satisfactory results.
+the k-vectors in the specified range. ω(k,t) is calculated for all time intervals in the simulation `s`. Note that ω(k,t) typically decays quickly, so the data should contain small time intervals to obtain satisfactory results.
 
 # Arguments
 - `s::Simulation`: A simulation object.
