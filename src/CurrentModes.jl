@@ -35,7 +35,7 @@ end
 
 
 """
-    find_current_modes(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, kspace::KSpace; verbose=true)
+    find_current_modes(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}, kspace::KSpace; verbose=true, friction_constant=1.0)
 
 A function which calculates the current modes, which are defined as: j(k,t) = μ / |k| ∑_j (k ⋅ F_j(t)) exp(i k ⋅ r_j(t)).
 Here r_j(t) is the position of particle j, μ is the particle's mobility, F_j(t) is the total force on particle j and
@@ -50,6 +50,7 @@ Note that a general `SingleComponentSimulation` object currently has no field fo
 - `s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}`: A single-component SelfPropelledVoronoi simulation
 - `kspace::KSpace`: A Kspace object, which contains the wavevectors at which to evaluate the current modes.
 - `verbose=true`: If `true`, prints a performance overview.
+- `friction_constant=1.0`: The friction constant. This value is only used if `s` is a `SingleComponentSimulation`.
 
 # Returns
 A SingleComponentCurrentModes object, with fields `Re` and `Im` that contain the real and imaginary parts of the current modes
@@ -131,22 +132,21 @@ function calculate_total_force(s::MCSPVSimulation)
 end
 
 """
-    calculate_total_force(s::Simulation)
+    calculate_total_force(s::Simulation, friction_constant=1.0)
 
 Calculates the total force on all particles for a general `Simulation` object. It is assumed that the
 total passive force is stored as instantanenous particle forces, and that the total active force is stored in terms of particle velocities. The total force is given by Ftot = v + γ F, where γ is the friction constant.
-
 
 # Arguments
 - `s::Simulation`: A single-component simulation object.
 - `friction_constant=1.0`: The friction constant, which is the inverse of the mobility.
 """
 function calculate_total_force(s::SingleComponentSimulation; friction_constant=1.0)
-    return s.v_array + friction_constant*s.F_array
+    return s.v_array + s.F_array ./ friction_constant
 end
 
 """
-    calculate_total_force(s::MultiComponentSimulation)
+    calculate_total_force(s::MultiComponentSimulation, friction_constant=1.0)
 
 Calculates the total force on all particles for a general `MultiComponentSimulation` object. It is assumed that the
 total passive force is stored as instantanenous particle forces , and that the total active force is stored in terms of particle velocities. The total force is given by Ftot = v + γ F, where γ is the friction constant.
@@ -156,7 +156,7 @@ total passive force is stored as instantanenous particle forces , and that the t
 - `friction_constant=1.0`: The friction constant, which is the inverse of the mobility.
 """
 function calculate_total_force(s::MultiComponentSimulation; friction_constant=1.0)
-    return s.v_array + friction_constant*s.F_array
+    return s.v_array + s.F_array ./ friction_constant
 end
 
 """
@@ -242,7 +242,7 @@ end
 
 
 """
-    find_current_modes(s::Union{MultiComponentSimulation,MCSPVSimulation}, kspace::KSpace; verbose=true)
+    find_current_modes(s::Union{MultiComponentSimulation,MCSPVSimulation}, kspace::KSpace; verbose=true, friction_constant=1.0)
 
 Calculates the current modes for all species in a multi-component simulation. The current modes are defined as:
 j{α}(k,t) = μ / |k| ∑_j (k ⋅ F{α}_j(t)) exp(i k ⋅ r{α}_j(t)),
@@ -256,12 +256,13 @@ it is taken to be 1.0 for all species!
 - `s::Union{MultiComponentSimulation, MCSPVSimulation}`: A multi-component SPV simulation object.
 - `kspace::KSpace`: A `KSpace` object containing the wavevectors at which to evaluate the current modes.
 - `verbose=true`: If `true`, prints a performance overview.
+- `friction_constant=1.0`: The friction constant. This value is only used if `s` is a `MultiComponentSimulation`.
 
 # Returns
 A MultiComponentCurrentModes object, with fields `Re` and `Im` that contain the real and imaginary parts of the current modes of
 all species of the mixture, at all times and for all wavevectors.
 """
-function find_current_modes(s::Union{MultiComponentSimulation,MCSPVSimulation}, kspace::KSpace; verbose=true)
+function find_current_modes(s::Union{MultiComponentSimulation,MCSPVSimulation}, kspace::KSpace; verbose=true, friction_constant=1.0)
     N_species = length(s.r_array)
     Nk = kspace.Nk
     N_timesteps = size(s.r_array[1], 3)
@@ -276,7 +277,12 @@ function find_current_modes(s::Union{MultiComponentSimulation,MCSPVSimulation}, 
     end
     tstart = time()
 
-    Ftot = calculate_total_force(s)
+    if s isa SingleComponentSimulation || s isa MultiComponentSimulation
+        Ftot = calculate_total_force(s; friction_constant=friction_constant)
+    else
+        Ftot = calculate_total_force(s)
+    end
+
     for species in 1:N_species
         _find_current_modes!(Rej[species], Imj[species], s.r_array[species], Ftot[species], kspace)
     end
@@ -297,7 +303,7 @@ end
 Calculates the average magnitude squared of the total force on a particle, scaled by the mobility. This
 corresponds with local velocity correlations (for k → ∞).
 
-The correlation is defined as: 1/(d N μ^2) ∑_j < (Ftot_j)^2 >,
+The correlation is defined as: μ^2 /(d N) ∑_j < (Ftot_j)^2 >,
 
 where d is the dimension, N is the number of particles, μ is the mobility and Ftot_j is the total force
 on particle j. The sum runs over all particles, and the average <...> is performed over all timesteps in
@@ -305,15 +311,21 @@ the simulation.
 
 # Arguments:
 - `s::Union{Simulation,SelfPropelledVoronoiSimulation}`: A single-component simulation object.
+- `friction_constant=1.0`: The friction coefficient (inverse of the mobility). This value is only used if `s` is a `SingleComponentSimulation`.
 
 # Returns:
 A Float64 (The average force squared)
 """
 function find_force_correlation(s::Union{SingleComponentSimulation, SelfPropelledVoronoiSimulation}; friction_constant=1.0)
     N = s.N; Nt = s.Nt; Ndims = s.Ndims
-    forces = calculate_total_force(s; friction_constant=friction_constant)
+    if s isa SelfPropelledVoronoiSimulation
+        forces = calculate_total_force(s)
+    else
+        forces = calculate_total_force(s; friction_constant=friction_constant)
+    end
     force_sum = sum(abs2, forces)  #[(forces[i,:,:]).^2 for i=1:Ndims]
-    return force_sum / (Ndims*Nt*N*friction_constant^2)
+    # the total force is already scaled by the mobility / friction constant, so we don't have to multiply here
+    return force_sum / (Ndims*Nt*N)
 end
 
 """
@@ -322,7 +334,7 @@ end
 Calculates the average magnitude squared of the total force on a particle, scaled by the mobility. This
 corresponds with local velocity correlations (for k → ∞). This is done for all species in the simulation.
 
-The correlation is defined as: δ{αβ} /(d N μ{α}^2) ∑_j < (Ftot{α}_j)^2 >,
+The correlation is defined as: δ{αβ} μ{α}^2 /(d N) ∑_j < (Ftot{α}_j)^2 >,
 
 where d is the dimension, N is the number of particles, μ is the mobility and Ftot_j is the total force
 on particle j. δ{αβ} is a Kronecker delta, and {α} means that the particles of subspecies α are considered.
@@ -330,20 +342,24 @@ The average is performed over all timesteps, for all species in the simulation.
 
 # Arguments:
 - `s::Union{MultiComponentSimulation,MCSPV}`: A multi-component simulation object.
+- `friction_constant=1.0`: The friction coefficient. This value is only used if `s` is a `MultiComponentSimulation`.
 
 # Returns:
 A Matrix of size (N_species x N_species), containing the average squared force of each species.
 """
-function find_force_correlation(s::Union{MultiComponentSimulation,MCSPVSimulation})
+function find_force_correlation(s::Union{MultiComponentSimulation,MCSPVSimulation}; friction_constant=1.0)
     N_species = s.N_species; N = s.N; Nt = s.Nt
     Ndims = s.Ndims
     w0 = zeros(N_species, N_species)
 
-    var = calculate_total_force(s)
-    for spec in 1:N_species
+    if s isa MCSPVSimulation
         var = calculate_total_force(s)
-        var_sum = [(var[spec][i,:,:]).^2 for i=1:Ndims]
-        w0[spec, spec] = sum(sum(var_sum))
+    else
+        var = calculate_total_force(s; friction_constant=friction_constant)
+    end
+
+    for spec in 1:N_species
+        w0[spec, spec] = sum(abs2, var[spec])  # w0[spec, spec] = sum(sum([(var[spec][i,:,:]).^2 for i=1:Ndims]))
     end
     return w0 ./ (Ndims * N * Nt)
 end
