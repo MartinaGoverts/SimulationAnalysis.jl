@@ -48,7 +48,7 @@ end
     traj = SimulationAnalysis.read_simulation_Berthier(file; original=false, velocities=false, forcestype=false, time_origins=10)
 
     gr =  SimulationAnalysis.find_radial_distribution_function(traj, 10,  10.0)
-    @test length(gr[r]) == length(gr[g])
+    @test length(gr[1]) == length(gr[2])
     @test all(gr[2] .>= 0)
 end
 
