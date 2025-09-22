@@ -122,6 +122,21 @@ function COM_correction_function(r, box_sizes, N, original)
     end
 end
 
+"""
+apply_periodic_boundary_conditions(position, box_sizes)
+
+Applies periodic boundary conditions to a given position, ensuring it wraps around the simulation box.
+For a position coordinate `x` and a box dimension `L`, the new coordinate `x'` is `x - floor(x/L) * L`.
+This maps `x` to the interval `[0, L)`. The same logic applies to all dimensions.
+
+# Arguments
+- `position`: The original position, typically an `SVector` or any `AbstractVector` representing coordinates (e.g., `[x, y]`).
+- `box_sizes`: The dimensions of the simulation box, typically an `SVector` or `AbstractVector` (e.g., `[Lx, Ly]`).
+
+# Returns
+- `new_position`: The position after applying periodic boundary conditions, of the same type as `position`.
+"""
+
 function apply_periodic_boundary_conditions(position, box_sizes)
     new_position = position .- floor.(position ./ box_sizes) .* box_sizes
     return new_position
