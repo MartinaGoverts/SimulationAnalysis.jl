@@ -10,6 +10,7 @@ see SelfPropelledVoronoi.jl
     - `params`: The parameters for the simulation from SelfPropelledVoronoi.jl
     - `dt_array`: The time step array.
     - `t1_t2_pair_array`: The time pairs array.
+    - `COM_correction::Bool=true`: Whether to apply a correction for the collective displacement
     - `original::Bool=false`: Whether to reconstruct the original trajectories.
 
 # Returns
