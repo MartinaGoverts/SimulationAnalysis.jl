@@ -10,7 +10,8 @@ see SelfPropelledVoronoi.jl
     - `params`: The parameters for the simulation from SelfPropelledVoronoi.jl
     - `dt_array`: The time step array.
     - `t1_t2_pair_array`: The time pairs array.
-    - `COM_correction::Bool=true`: Whether to apply a correction for the collective displacement
+    - `COM_correction::Bool=true`: Whether to apply a correction for the collective displacement.
+       We assume that all particles have the same mass.
     - `original::Bool=false`: Whether to reconstruct the original trajectories.
 
 # Returns
@@ -76,7 +77,7 @@ function read_SPV_simulation(traj, params; dt_array=nothing, t1_t2_pair_array=no
 end
 
 """
-    read_SPV_simulation_multicomponent(traj, params, species::Vector{Int}; dt_array=nothing, t1_t2_pair_array=nothing, original::Bool=false)
+    read_SPV_simulation_multicomponent(traj, params, species::Vector{Int}; dt_array=nothing, t1_t2_pair_array=nothing,  COM_correction::Bool=true, original::Bool=false)
 
 reads the SPV simulation data from the specified file. If `dt_array` and `t1_t2_pair_array` are not provided, they will be automatically determined from the data. 
 Returns a multicomponent simulation object, where the species are specified by the `species` vector.
@@ -88,6 +89,8 @@ see SelfPropelledVoronoi.jl
     - `species::Vector{Int}`: A vector specifying the species of the particles.
     - `dt_array`: The time step array.
     - `t1_t2_pair_array`: The time pairs array.
+    - `COM_correction::Bool=true`: Whether to apply a correction for the collective displacement.
+       We assume that all particles have the same mass.
     - `original::Bool=false`: Whether to reconstruct the original trajectories.
 
 
@@ -123,7 +126,9 @@ function read_SPV_simulation_multicomponent(traj, params, species::Vector{Int}; 
     end
     N = size(r, 2)
 
-    if original
+    if COM_correction
+        r = COM_correction_function(r, box_sizes, N, original)
+    elseif original
         r = find_original_trajectories(r, box_sizes)
     end
 
