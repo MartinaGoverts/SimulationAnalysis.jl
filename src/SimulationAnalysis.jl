@@ -37,6 +37,7 @@ include("Clustering.jl")
 include("Utils.jl")
 include("CurrentModes.jl")
 include("VelocityCorrelations.jl")
+include("COMCorrection.jl")
 
 
 function show(io::IO,  ::MIME"text/plain", s::Union{KSpace, Simulation})
