@@ -15,7 +15,7 @@ see SelfPropelledVoronoi.jl
 # Returns
     - `SelfPropelledVoronoiSimulation`: A `SelfPropelledVoronoiSimulation` object.
 """
-function read_SPV_simulation(traj, params; dt_array=nothing, t1_t2_pair_array=nothing, original::Bool=false)
+function read_SPV_simulation(traj, params; dt_array=nothing, t1_t2_pair_array=nothing, COM_correction::Bool=true, original::Bool=false)
     # traj, params = SelfPropelledVoronoi.load_trajectory(filenamefull)
     # traj contains fields:
     # positions_trajectory::Vector{Vector{SVector{2, Float64}}}
@@ -46,9 +46,12 @@ function read_SPV_simulation(traj, params; dt_array=nothing, t1_t2_pair_array=no
     end
     N = size(r, 2)
 
-    if original
+    if COM_correction
+        r = COM_correction_function(r,box_sizes, N, original)
+    elseif original
         r = find_original_trajectories(r, box_sizes)
     end
+   
 
     return SelfPropelledVoronoiSimulation(
             N, 
@@ -71,6 +74,58 @@ function read_SPV_simulation(traj, params; dt_array=nothing, t1_t2_pair_array=no
         )
 end
 
+"""
+    COM_correction_function(r,box_sizes, N, original::Bool=false)
+
+Updates the positions by applying a COM correction.
+
+# Arguments
+    - `r`: An array containing all saved particle positions
+    - `box_sizes`: A tuple containing the sizes of the simulation box
+    - `N`: The number of particles.
+    - `original::Bool=false`: Whether to reconstruct the original trajectories.
+
+# Returns
+    - `updated_r_array`: An array containing all updated positions.
+    - if original = true: 
+    `updated_r_array_original`: An array containing all updated positions with reconstructed original trajectories.
+"""
+
+
+function COM_correction_function(r, box_sizes, N, original)
+    # first apply COM correction on original, then convert back to normal by applying pbc?
+    # required to avoid issues where particles end up outside the box!
+    r_original = find_original_trajectories(r, box_sizes)
+
+    # find COM
+    first_x_positions = r_original[1,:,1]
+    first_COM_x = sum(first_x_positions)/N
+
+    first_y_positions = r_original[2,:,1]
+    first_COM_y = sum(first_y_positions)/N
+
+    updated_r_array_original = zeros(size(r_original))
+
+    # Update positions
+    for i in 1:size(r_original,3)
+        x_shift = sum(r_original[1,:,i])/N - first_COM_x
+        y_shift = sum(r_original[2,:,i])/N - first_COM_y
+
+        updated_r_array_original[1,:,i] = r_original[1,:,i] .- x_shift
+        updated_r_array_original[2,:,i] = r_original[2,:,i] .- y_shift
+
+        end
+    if original
+        return updated_r_array_original
+    else
+    return apply_periodic_boundary_conditions(updated_r_array_original, box_sizes)
+    end
+end
+
+function apply_periodic_boundary_conditions(position, box_sizes)
+    new_position = position .- floor.(position ./ box_sizes) .* box_sizes
+    return new_position
+end
 
 """
     read_SPV_simulation_multicomponent(traj, params, species::Vector{Int}; dt_array=nothing, t1_t2_pair_array=nothing, original::Bool=false)
