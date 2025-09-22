@@ -97,7 +97,7 @@ see SelfPropelledVoronoi.jl
 # Returns
     - `SelfPropelledVoronoiSimulation`: A `MulticomponentSelfPropelledVoronoiSimulation` object.
 """
-function read_SPV_simulation_multicomponent(traj, params, species::Vector{Int}; dt_array=nothing, t1_t2_pair_array=nothing, original::Bool=false)
+function read_SPV_simulation_multicomponent(traj, params, species::Vector{Int}; dt_array=nothing, t1_t2_pair_array=nothing, COM_correction::Bool=true, original::Bool=false)
     # traj, params = SelfPropelledVoronoi.load_trajectory(filenamefull)
     # traj contains fields:
     # positions_trajectory::Vector{Vector{SVector{2, Float64}}}
