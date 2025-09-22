@@ -89,3 +89,7 @@ end
 @testset "velocity correlations" begin
     include("test_velocity_correlations.jl")
 end
+
+@testset "COM correction" begin
+    include("test_COM_correction.jl")
+end
