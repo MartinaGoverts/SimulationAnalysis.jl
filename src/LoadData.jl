@@ -998,10 +998,10 @@ Find allowed time pairs for a logarithmic time array with multiple starts.
 # Returns
 - A tuple containing the `dt_array` and `t1_t2_pair_array`.
 """
-function find_allowed_t1_t2_pair_array_log_multstarts(t_array::Vector{Int}, N_starts)
+function find_allowed_t1_t2_pair_array_log_multstarts(t_array::Vector{Int}, log_factor, N_starts)
     maxt = t_array[end]
 
-    dt_array = find_log_time_array_multiple_starts(1.3, 1, maxt)
+    dt_array = find_log_time_array_multiple_starts(log_factor, 1, maxt)
     @assert all(dt in t_array for dt in dt_array)
 
     t1_t2_pair_array = Vector{Array{Int64, 2}}()
