@@ -1,24 +1,18 @@
-function test_shifts(r_original, N)
+function test_shifts(r_original)
     # COM in X direction
-    first_x_positions = r_original[1,:,1]
-    first_COM_x = sum(first_x_positions)/N
+    N = size(r_original, 2)
+    first_COM = sum(r_original[:, :, 1], dims=2) ./ N
 
-    first_y_positions = r_original[2,:,1]
-    first_COM_y = sum(first_y_positions)/N
-
-    x_shift = []
-    y_shift = []
+    shifts = []
 
     for i in range(1,size(r_original)[3])
-        # x correction
-        x_position = r_original[1,:,i]
-        x_shift = push!(x_shift,sum(x_position)/N - first_COM_x)
 
-        # y correction
-        y_position = r_original[2,:,i]
-        y_shift = push!(y_shift,sum(y_position)/N - first_COM_y)
+        shift = sum(r_original[:,:,i], dims=2) ./ N .- first_COM
+
+        push!(shifts,shift)
+
     end
-    return x_shift, y_shift
+    return shifts
 end
 
 N = 400
@@ -39,13 +33,13 @@ end
 # Check if COM is correctly applied by calculating the COM correction first
 # with original = true, and then calculating if the shifts are indeed 0 if we 
 # apply a COM correction on the ouput again
-r_test = SimulationAnalysis.COM_correction_function(r_array, box_sizes, N, true)
-x,y = test_shifts(r_test, N)
-max_val = max(maximum(x), maximum(y))
+r_test = SimulationAnalysis.COM_correction_function(r_array, box_sizes, true)
+shifts = test_shifts(r_test)
+max_val = maximum(map(maximum, shifts))
 @test max_val < 1e-10
 
 # Check if all particles are still in the box by applying the COM
 # correction with original = false
-r_test_2 = SimulationAnalysis.COM_correction_function(r_array, box_sizes, N, false) 
+r_test_2 = SimulationAnalysis.COM_correction_function(r_array, box_sizes, false) 
 @test !any(>(box_sizes[1]), r_test_2[1,:,:])
 @test !any(>(box_sizes[2]), r_test_2[2,:,:])
