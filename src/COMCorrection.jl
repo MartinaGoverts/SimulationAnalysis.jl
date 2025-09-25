@@ -4,9 +4,9 @@
 Updates the positions by applying a COM correction.
 
 # Arguments
-    - `r`: An array containing all saved particle positions
+    - `r`: A three dimensional array containing all saved particle positions. Size is 
+    given by `d x N x Nt`, where `N` is the number of particles, and `Nt` the number of frames
     - `box_sizes`: A tuple containing the sizes of the simulation box
-    - `N`: The number of particles.
     - `original::Bool=false`: Whether to reconstruct the original trajectories.
 
 # Returns
@@ -16,29 +16,23 @@ Updates the positions by applying a COM correction.
 """
 
 
-function COM_correction_function(r, box_sizes, N, original)
+function COM_correction_function(r, box_sizes, original)
     # first apply COM correction on original, then convert back to normal by applying pbc?
     # required to avoid issues where particles end up outside the box!
+    N = size(r, 2)
     r_original = find_original_trajectories(r, box_sizes)
 
     # find COM
-    first_x_positions = r_original[1,:,1]
-    first_COM_x = sum(first_x_positions)/N
-
-    first_y_positions = r_original[2,:,1]
-    first_COM_y = sum(first_y_positions)/N
+    first_COM = sum(r_original[:, :, 1], dims=2) ./ N
 
     updated_r_array_original = zeros(size(r_original))
 
     # Update positions
     for i in 1:size(r_original,3)
-        x_shift = sum(r_original[1,:,i])/N - first_COM_x
-        y_shift = sum(r_original[2,:,i])/N - first_COM_y
+        shift = sum(r_original[:,:,i], dims=2) ./ N .- first_COM
+        updated_r_array_original[:,:,i] .= r_original[:,:,i] .- shift
+    end
 
-        updated_r_array_original[1,:,i] = r_original[1,:,i] .- x_shift
-        updated_r_array_original[2,:,i] = r_original[2,:,i] .- y_shift
-
-        end
     if original
         return updated_r_array_original
     else
@@ -54,7 +48,7 @@ For a position coordinate `x` and a box dimension `L`, the new coordinate `x'` i
 This maps `x` to the interval `[0, L)`. The same logic applies to all dimensions.
 
 # Arguments
-- `position`: The original position, typically an `SVector` or any `AbstractVector` representing coordinates (e.g., `[x, y]`).
+- `position`: The original position, typically an `SVector` or any `AbstractVector` representing coordinates (e.g., `[x, y]`). It's first dimension must be equal to the length of `box_sizes`.
 - `box_sizes`: The dimensions of the simulation box, typically an `SVector` or `AbstractVector` (e.g., `[Lx, Ly]`).
 
 # Returns

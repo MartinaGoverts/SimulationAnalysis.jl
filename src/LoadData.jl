@@ -49,7 +49,7 @@ function read_SPV_simulation(traj, params; dt_array=nothing, t1_t2_pair_array=no
     N = size(r, 2)
 
     if COM_correction
-        r = COM_correction_function(r,box_sizes, N, original)
+        r = COM_correction_function(r,box_sizes, original)
     elseif original
         r = find_original_trajectories(r, box_sizes)
     end
@@ -127,7 +127,7 @@ function read_SPV_simulation_multicomponent(traj, params, species::Vector{Int}; 
     N = size(r, 2)
 
     if COM_correction
-        r = COM_correction_function(r, box_sizes, N, original)
+        r = COM_correction_function(r, box_sizes, original)
     elseif original
         r = find_original_trajectories(r, box_sizes)
     end
